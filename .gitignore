@@ -1,0 +1,9 @@
+/.vs/
+/PIModTool.Wpf/bin/
+/PIModTool.Wpf/obj/
+/PIModTool.Lib/bin/
+/PIModTool.Lib/obj/
+/PIModTool.Lib/.vs
+/PIModTool.Core/bin/
+/PIModTool.Core/obj/
+/third_party/at3tool/ps3_at3tool.exe

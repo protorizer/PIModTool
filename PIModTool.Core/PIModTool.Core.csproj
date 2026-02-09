@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="Microsoft.Xml.SgmlReader" Version="1.8.30" />
+    <PackageReference Include="MvvmCross" Version="9.3.1" />
+    <PackageReference Include="MvvmCross.Plugin.Messenger" Version="9.3.1" />
+    <PackageReference Include="NAudio" Version="2.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PIModTool.Lib\PIModTool.Lib.csproj" />
+  </ItemGroup>
+
+</Project>

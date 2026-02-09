@@ -1,0 +1,69 @@
+﻿<views:MvxWpfView
+    xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
+    xmlns:mvx="clr-namespace:MvvmCross.Platforms.Wpf.Binding;assembly=MvvmCross.Platforms.Wpf"
+    x:Class="PIModTool.Wpf.Views.MainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PIModTool.Wpf.Views"
+             xmlns:components="clr-namespace:PIModTool.Wpf.Views.Components"
+             mc:Ignorable="d" 
+             d:DesignHeight="720" d:DesignWidth="1280">
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Header -->
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="3"/>
+            <RowDefinition Height="20"/>
+            <!-- Boxes -->
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+            <!-- Footer -->
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+        
+        <!-- Logo -->
+        <Image Source="pack://application:,,,/Resources/Images/PIModToolLogo.png" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="5" Width="400" HorizontalAlignment="Center"/>
+        
+        <!-- Dividing line -->
+        <Rectangle Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="7" Fill="White"/>
+
+        <!-- SmallF.dat Section -->
+        <components:MenuBoxView Grid.Row="5" Grid.Column="3" Label="SmallF.dat" HeaderPadding="5">
+            <StackPanel Grid.Row="6" Grid.Column="3" Margin="10" VerticalAlignment="Center">
+                <Button Width="200" Height="50" Style="{StaticResource CustomButtonStyle}" Margin="5" Click="SmallFEditor_OnClick">SmallF.dat Editor</Button>
+                <Button Width="200" Height="50" Style="{StaticResource CustomButtonStyle}" Margin="5" Click="SmallFPacker_OnClick">SmallF.dat Packer</Button>
+            </StackPanel>
+        </components:MenuBoxView>
+
+        <!-- Audio Section -->
+        <components:MenuBoxView Grid.Row="7" Grid.Column="3" Label="Audio" HeaderPadding="5">
+            <StackPanel Grid.Row="6" Grid.Column="3" Margin="10" VerticalAlignment="Center">
+                <Button Width="200" Height="50" Style="{StaticResource CustomButtonStyle}" Margin="5" Click="YukEditor_OnClick">.yuk Music Editor</Button>
+            </StackPanel>
+        </components:MenuBoxView>
+
+        <!-- 3D Section -->
+        <components:MenuBoxView Grid.Row="5" Grid.Column="5" Label="3D Models" HeaderPadding="5">
+            <StackPanel Grid.Row="6" Grid.Column="3" Margin="10" VerticalAlignment="Center">
+                <Button Width="200" Height="50" Style="{StaticResource CustomButtonStyle}" Margin="5" Click="PixEditor_OnClick">Model Viewer/Extractor (WIP)</Button>
+            </StackPanel>
+        </components:MenuBoxView>
+
+        <!-- Little watermark -->
+        <TextBlock FontFamily="pack://application:,,,/Resources/Fonts/#Euromode" Text="[protorizer]" Grid.Row="8" Grid.Column="5" Foreground="Black" HorizontalAlignment="Right"/>
+    </Grid>
+</views:MvxWpfView>

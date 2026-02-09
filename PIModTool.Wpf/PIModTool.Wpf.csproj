@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\Fonts\Euromode.ttf" />
+    <None Remove="Resources\Images\LoadingBase.png" />
+    <None Remove="Resources\Images\PIIconSolid.png" />
+    <None Remove="Resources\Images\PIModToolLogo.png" />
+    <None Remove="Resources\PIIcon.png" />
+    <None Remove="Resources\SyntaxDefinitions\EventScriptHighlighting.xshd" />
+    <None Remove="Resources\SyntaxDefinitions\PSCScriptHighlighting.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\SyntaxDefinitions\EventScriptHighlighting.xshd" />
+    <Resource Include="Resources\SyntaxDefinitions\ObjectScriptHighlighting.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="HelixToolkit.Wpf" Version="3.1.2" />
+    <PackageReference Include="MvvmCross.Platforms.Wpf" Version="9.3.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PIModTool.Core\PIModTool.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Fonts\Euromode.ttf" />
+    <Resource Include="Resources\Images\LoadingBase.png" />
+    <Resource Include="Resources\Images\PIIcon.png" />
+    <Resource Include="Resources\Images\PIIconSolid.png" />
+    <Resource Include="Resources\Images\PIModToolLogo.png" />
+    <Resource Include="Resources\SyntaxDefinitions\PSCScriptHighlighting.xshd" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

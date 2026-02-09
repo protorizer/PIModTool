@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34928.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PIModTool.Lib", "PIModTool.Lib\PIModTool.Lib.csproj", "{038D7E27-E49B-4A8D-AE4F-B52FAA6F4B3D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PIModTool.Core", "PIModTool.Core\PIModTool.Core.csproj", "{7F9ABD4C-3D00-47D1-AF34-A54A219A15C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PIModTool.Wpf", "PIModTool.Wpf\PIModTool.Wpf.csproj", "{B5572B32-DC77-4443-ABDC-5ED8DCF62A59}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{038D7E27-E49B-4A8D-AE4F-B52FAA6F4B3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{038D7E27-E49B-4A8D-AE4F-B52FAA6F4B3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{038D7E27-E49B-4A8D-AE4F-B52FAA6F4B3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{038D7E27-E49B-4A8D-AE4F-B52FAA6F4B3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F9ABD4C-3D00-47D1-AF34-A54A219A15C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F9ABD4C-3D00-47D1-AF34-A54A219A15C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F9ABD4C-3D00-47D1-AF34-A54A219A15C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F9ABD4C-3D00-47D1-AF34-A54A219A15C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5572B32-DC77-4443-ABDC-5ED8DCF62A59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5572B32-DC77-4443-ABDC-5ED8DCF62A59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5572B32-DC77-4443-ABDC-5ED8DCF62A59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5572B32-DC77-4443-ABDC-5ED8DCF62A59}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D7C971B8-E7F1-42CB-A1D2-675491A88150}
+	EndGlobalSection
+EndGlobal

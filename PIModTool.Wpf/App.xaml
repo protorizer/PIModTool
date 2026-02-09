@@ -1,0 +1,76 @@
+﻿<views:MvxApplication
+    xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
+    x:Class="PIModTool.Wpf.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:PIModTool.Wpf"
+             xmlns:utilities="clr-namespace:PIModTool.Wpf.Utilities"
+             StartupUri="MainWindow.xaml">
+    <views:MvxApplication.Resources>
+        <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#000033"/>
+        <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="White"/>
+
+        <!-- Button Style -->
+        <Style x:Key="CustomButtonStyle" TargetType="Button">
+            <!-- Custom Button ControlTemplate -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Setter Property="Background" Value="#000033"/>
+            <Setter Property="Foreground" Value="LightGray"/>
+            <Setter Property="BorderBrush" Value="DimGray"/>
+            <Setter Property="FontFamily" Value="pack://application,,,/Resources/Fonts/#Euromode"/>
+
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="Navy"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="Blue"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Margin Converter -->
+        <utilities:PaddingToMarginConverter x:Key="PaddingToMarginConverter"/>
+
+        <!-- Renaming Converter -->
+        <utilities:FileRenameVisibilityMultiConverter x:Key="FileRenameVisibilityMultiConverter"/>
+
+        <!-- Scrollbar Style -->
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="DarkGray"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track"
+                               IsDirectionReversed="true">
+                                <Track.Thumb>
+                                    <Thumb Margin="0" BorderThickness="0">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border 
+                                            Background="Navy"
+                                            BorderBrush="DarkGray"
+                                            BorderThickness="1" />
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </views:MvxApplication.Resources>
+</views:MvxApplication>

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(OutputType)'=='Exe'">
+		<DefineConstants>IS_CONSOLE</DefineConstants>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="..\third_party\**\*" Exclude="..\third_party\at3tool\ps3_at3tool.exe">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>tools\%(RecursiveDir)%(Filename)%(Extension)</Link>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<Content Include="..\third_party\at3tool\ps3_at3tool.exe">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Link>tools\at3tool\ps3_at3tool.exe</Link>
+		</Content>
+	</ItemGroup>
+</Project>
