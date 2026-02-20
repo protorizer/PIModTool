@@ -612,6 +612,11 @@ namespace PIModTool.Core.ViewModels
                 return;
             }
 
+            if (PreviewPlayer == null)
+            {
+                await InitializePlayer();
+            }
+
             SaveWavs(folderName);
         }
 
