@@ -1,5 +1,6 @@
 ﻿using MvvmCross.Commands;
 using MvvmCross.ViewModels;
+using NAudio.Utils;
 using NAudio.Wave;
 using PIModTool.Core.Utilities;
 using System.Diagnostics;
@@ -109,6 +110,28 @@ namespace PIModTool.Core.ViewModels.Components
             {
                 await _messageService.ShowErrorAsync("The file you selected is not a valid WAV file.");
                 return;
+            }
+
+            // Detect and convert codecs
+            if (reader.WaveFormat.Encoding != WaveFormatEncoding.Pcm)
+            {
+                switch (reader.WaveFormat.Encoding)
+                {
+                    case WaveFormatEncoding.IeeeFloat:
+                        WaveFloatTo16Provider converter = new WaveFloatTo16Provider(reader);
+                        MemoryStream conversionStream = new MemoryStream();
+
+                        WaveFileWriter.WriteWavFileToStream(conversionStream, converter);
+                        conversionStream.Position = 0;
+
+                        reader.Dispose();
+                        reader = new WaveFileReader(conversionStream);
+
+                        break;
+                    default:
+                        await _messageService.ShowErrorAsync("Unsupported WAV codec: " + reader.WaveFormat.Encoding.ToString() + ". Please contact the developer.");
+                        break;
+                }
             }
 
             NumSamples = reader.SampleCount;

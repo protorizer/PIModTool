@@ -365,9 +365,19 @@ namespace PIModTool.Core.ViewModels
                     // Convert stream to byte[] and send to YukHandler
                     using MemoryStream stemStream = new MemoryStream();
                     ISampleProvider sampleProvider = StemPickers[i].AudioData.ToSampleProvider();
+                    WaveFormat targetFormat = new WaveFormat(48000, 16, 2); // at3tool only supports 48000hz
+                    SampleToWaveProvider16 waveProvider;
 
-                    WaveFormat targetFormat = new WaveFormat(48000, 16, 2);
-                    SampleToWaveProvider16 waveProvider = new SampleToWaveProvider16(sampleProvider);
+                    // Resample
+                    if (sampleProvider.WaveFormat.SampleRate != targetFormat.SampleRate)
+                    {
+                        WdlResamplingSampleProvider resampler = new WdlResamplingSampleProvider(sampleProvider, targetFormat.SampleRate);
+                        waveProvider = new SampleToWaveProvider16(resampler);
+                    }
+                    else
+                    {
+                        waveProvider = new SampleToWaveProvider16(sampleProvider);
+                    }
 
                     // Write wav to buffer
                     using (WaveFileWriter stemWriter = new WaveFileWriter(stemStream, targetFormat))
@@ -434,7 +444,7 @@ namespace PIModTool.Core.ViewModels
 
         private async Task InitializePlayer()
         {
-            MixingSampleProvider previewMixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(48000, 2)) { ReadFully = true };
+            MixingSampleProvider previewMixer = new MixingSampleProvider(WaveFormat.CreateIeeeFloatWaveFormat(StemPickers[0].AudioData.WaveFormat.SampleRate, 2)) { ReadFully = true };
             for (int i = 0; i < StemPickers.Count; i++)
             {
                 PreviewStems[i] = new StemSampleProvider(StemPickers[i].AudioData.ToSampleProvider());
