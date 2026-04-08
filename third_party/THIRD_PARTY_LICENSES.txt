@@ -12,8 +12,3 @@ Portions Copyright (C) 2000-2004 Leshade Entis, Entis-soft.
 Portions Public Domain originating with Sun Microsystems
 License: ISC/MIT License
 Source: https://github.com/vgmstream/vgmstream
-
-offzip
-Copyright © 2003-Present Luigi Auriemma
-License: GPL Version 2.0
-Source: https://aluigi.altervista.org/mytoolz/offzip.zip

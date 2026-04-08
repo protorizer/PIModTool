@@ -10,28 +10,13 @@ namespace PIModTool.Lib
 {
     public static class PixHandler
     {
-        // Detects zlib headers by checking for compression mode and checksum
-        private static bool IsZlibHeader(byte cmf, byte flg)
-        {
-            // Lower 4 bytes of CMF must equal 8
-            if((cmf & 0b1111) != 8)
-            {
-                return false;
-            }
-
-            int header = cmf * 256 + flg;
-            return header % 31 == 0;
-        }
-
         // Attempts to zlib-decompress a binary chunk
-        // TODO: This function is insanely unoptimized - check offzip's source code to figure out how to optimize it
-        // Check loadl1pack in DCAP to glean more info about the .pix file format
-        private static byte[]? TryDecompressZlib(byte[] data, int offset)
+        private static byte[]? TryDecompressZlib(byte[] data)
         {
             try
             {
-                using MemoryStream dataStream = new MemoryStream(data, offset + 2, data.Length - offset - 2);
-                using DeflateStream deflateStream = new DeflateStream(dataStream, CompressionMode.Decompress);
+                using MemoryStream dataStream = new MemoryStream(data);
+                using ZLibStream deflateStream = new ZLibStream(dataStream, CompressionMode.Decompress);
                 using MemoryStream outputStream = new MemoryStream();
 
                 deflateStream.CopyTo(outputStream);
@@ -43,99 +28,68 @@ namespace PIModTool.Lib
             }
         }
 
-        // Opens a pix file and zlib-decompresses its contents
-        // TODO: Remove reliance on offzip so that we have more control over how it works
+        // Opens a .pix file and zlib-decompresses its contents
+        // Based on the QuickBMS script on reshax: https://reshax.com/topic/840-full-auto-xbox-360-rxx-pix-pit-xzp
         // TODO: Add descriptive errors
-        // TODO: Make this work with X360 pix files - it doesn't work for some
         public static async Task<List<GenericFile>?> ReadPix(string filePath)
         {
-            string offzipPath = Path.Combine(AppContext.BaseDirectory, "tools", "offzip", "offzip.exe");
-            if (!Path.Exists(offzipPath))
-            {
-                return null;
-            }
-
-            string tempFilePath = Path.Combine(Path.GetTempPath(), "PIModTool", Guid.NewGuid().ToString());
-
             List<GenericFile> contents = new List<GenericFile>();
-
             try
             {
-                Directory.CreateDirectory(tempFilePath);
-                File.Copy(filePath, Path.Combine(tempFilePath, "tmppix.pix"));
-                Directory.CreateDirectory(Path.Combine(tempFilePath, "output"));
-
-                // Run offzip
-                ProcessStartInfo offzipInfo = new ProcessStartInfo
+                using(FileStream pixFile = File.OpenRead(filePath))
                 {
-                    FileName = offzipPath,
-                    Arguments = "-a tmppix.pix output",
-                    WorkingDirectory = tempFilePath,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using Process offzipProc = new Process { StartInfo = offzipInfo };
-                offzipProc.Start();
-
-                await offzipProc.WaitForExitAsync();
-
-                // Open all offzip contents
-                string[] zlibChunks = Directory.GetFiles(Path.Combine(tempFilePath, "output"));
-                for (int i = 0; i < zlibChunks.Length; i++)
-                {
-                    FileStream chunk = File.OpenRead(zlibChunks[i]);
-                    BinaryReader chunkReader = new BinaryReader(chunk);
-                    // Split zlib streams into multiple file streams
-                    int numChunks = chunkReader.ReadInt32(); // Number of chunks in most cases
-
-                    int currentChunk = 0;
-                    while(chunk.Position != chunk.Length)
+                    using (BinaryReader reader = new BinaryReader(pixFile))
                     {
-                        if(currentChunk >= numChunks) // Failsafe for some pix files
+                        while (true)
                         {
-                            break;
-                        }
+                            int zSize = reader.ReadInt32();
+                            int size = reader.ReadInt32();
 
-                        int fileLength = chunkReader.ReadInt32();
-                        if(fileLength <= 0 || fileLength > (chunk.Length - chunk.Position))
-                        {
-                            // Corrupted stream
-                            Debug.WriteLine("Skipping corrupted or empty streams in " + zlibChunks[i]);
-                            break;
-                        }
-                        string path = chunkReader.ReadNullTerminatedString();
-                        if (path.IndexOfAny(Path.GetInvalidPathChars()) >= 0) // Check if path is invalid
-                        {
-                            Debug.WriteLine("Skipping invalid streams in" + zlibChunks[i]);
-                            break;
-                        }
-                        byte[] fileData = chunkReader.ReadBytes(fileLength);
-                        FileType type = FileType.UnknownBinary;
-                        if (path.Contains(".drp")){
-                            type = FileType.DRP;
-                        }
+                            if (zSize == 0) break;
 
-                        GenericFile file = new GenericFile(path, fileData);
-                        file.Type = type;
-                        contents.Add(file);
-                        currentChunk++;
+                            pixFile.Position = (pixFile.Position + 0x7FF) & ~0x7FFL; // Align to a 0x800 padded boundary
+
+                            byte[] zlibData = reader.ReadBytes(zSize);
+                            byte[]? decompressedData = TryDecompressZlib(zlibData);
+
+                            if (decompressedData == null) // Bad chunk
+                            {
+                                throw new Exception("Bad zlib chunk");
+                            }
+
+                            using (BinaryReader chunkReader = new BinaryReader(new MemoryStream(decompressedData)))
+                            {
+                                int numFiles = chunkReader.ReadInt32();
+                                for (int i = 0; i < numFiles; i++)
+                                {
+                                    int fileSize = chunkReader.ReadInt32();
+                                    string path = chunkReader.ReadNullTerminatedString();
+                                    byte[] fileData = chunkReader.ReadBytes(fileSize);
+                                    FileType type;
+                                    switch (Path.GetExtension(path))
+                                    {
+                                        case ".drp":
+                                            type = FileType.DRP;
+                                            break;
+                                        default:
+                                            type = FileType.UnknownBinary;
+                                            break;
+                                    }
+
+                                    GenericFile file = new GenericFile(path, fileData);
+                                    file.Type = type;
+                                    contents.Add(file);
+                                }
+                            }
+                        }
                     }
-
-                    chunkReader.Close();
-                    chunk.Close();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 // Unknown error
                 Debug.Fail(e.Message);
                 return null;
-            }
-            finally
-            {
-                // Remove temporary files
-                Directory.Delete(tempFilePath, true);
             }
             Debug.WriteLine("Found " + contents.Count + " files");
             return contents;
