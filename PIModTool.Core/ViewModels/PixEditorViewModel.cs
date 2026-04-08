@@ -97,7 +97,7 @@ namespace PIModTool.Core.ViewModels
             {
                 return;
             }
-            (List<MeshVertex>? vertices, int vertexSectionEnd) = PixHandler.GetVertexData(ActiveFile);
+            (List<MeshVertex>? vertices, int vertexSectionEnd) = DRPHandler.GetVertexData(ActiveFile);
             if(vertices == null || vertexSectionEnd < 0)
             {
                 await _messageService.ShowNotifAsync("PIModTool couldn't find any vertices in this file. If this is an FX file, this is to be expected.");
@@ -105,7 +105,7 @@ namespace PIModTool.Core.ViewModels
                 //return;
             }
 
-            List<MeshFace>? faces = PixHandler.GetFaceData(ActiveFile, vertexSectionEnd, vertices.Count);
+            List<MeshFace>? faces = DRPHandler.GetFaceData(ActiveFile, vertexSectionEnd, vertices.Count);
 
             if(faces == null)
             {
