@@ -43,6 +43,9 @@
 
         <!-- Renaming Converter -->
         <utilities:FileRenameVisibilityMultiConverter x:Key="FileRenameVisibilityMultiConverter"/>
+        
+        <!-- Image Converter -->
+        <utilities:BinaryToBitmapConverter x:Key="BinaryToBitmapConverter"/>
 
         <!-- Scrollbar Style -->
         <Style TargetType="{x:Type ScrollBar}">

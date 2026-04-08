@@ -19,6 +19,8 @@ namespace PIModTool.Core.ViewModels
         private SmallFFile? _activeFile;
         private FileType _activeFileType;
         private SmallFFile? _renamingFile;
+        private bool _isImageFile;
+        private byte[] _imageData;
         public IMvxCommand<SmallFFile> BeginRenameCommand => new MvxCommand<SmallFFile>(StartRenameFile);
         public IMvxCommand EndRenameCommand => new MvxCommand(EndRenameFile);
         private readonly Dictionary<SmallFFile, TextDocument> _fileDocuments = new Dictionary<SmallFFile, TextDocument>();
@@ -77,6 +79,18 @@ namespace PIModTool.Core.ViewModels
             set { SetProperty(ref _renamingFile, value); }
         }
 
+        public bool IsImageFile
+        {
+            get { return _isImageFile; }
+            set { SetProperty(ref _isImageFile, value); }
+        }
+
+        public byte[] ImageData
+        {
+            get { return _imageData; }
+            set { SetProperty(ref _imageData, value); }
+        }
+
         public TextDocument EditorDocument
         {
             get { return _editorDocument; }
@@ -103,6 +117,7 @@ namespace PIModTool.Core.ViewModels
 
         private void LoadFileIntoDocument(SmallFFile? file)
         {
+            IsImageFile = false;
             if (file == null)
             {
                 EditorDocument = new TextDocument();
@@ -110,18 +125,10 @@ namespace PIModTool.Core.ViewModels
             }
             ActiveFileType = file.Type;
 
-            if (!_fileDocuments.TryGetValue(file, out TextDocument fileDoc))
-            {
-                fileDoc = new TextDocument(Encoding.UTF8.GetString(file.Data));
-                _fileDocuments[file] = fileDoc;
-            }
-
-            EditorDocument = fileDoc;
-
             switch (ActiveFileType) {
                 case FileType.DDS:
-                    ActiveFile = null;
-                    EditorDocument.Text = "Detected as a DDS file. Image viewer is WIP.";
+                    IsImageFile = true;
+                    ImageData = file.Data;
                     break;
                 case FileType.UnknownBinary:
                     ActiveFile = null;
@@ -130,6 +137,15 @@ namespace PIModTool.Core.ViewModels
                 case FileType.Unknown:
                     ActiveFile = null;
                     EditorDocument.Text = "PIModTool was unable to determine the filetype. Please contact the developer protorizer.";
+                    break;
+                default:
+                    if (!_fileDocuments.TryGetValue(file, out TextDocument fileDoc))
+                    {
+                        fileDoc = new TextDocument(Encoding.UTF8.GetString(file.Data));
+                        _fileDocuments[file] = fileDoc;
+                    }
+
+                    EditorDocument = fileDoc;
                     break;
             }
 

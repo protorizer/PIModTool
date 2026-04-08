@@ -12,6 +12,11 @@
              xmlns:components="clr-namespace:PIModTool.Wpf.Views.Components"
              mc:Ignorable="d" 
              d:DesignHeight="720" d:DesignWidth="1280">
+    <views:MvxWpfView.Resources>
+        <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" True="Visible" False="Collapsed"/>
+        <utilities:BooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" True="Collapsed" False="Visible"/>
+    </views:MvxWpfView.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="10"/>
@@ -91,39 +96,69 @@
         </Border>
 
         <Border Grid.Row="1" Grid.Column="3" Grid.RowSpan="2" BorderBrush="DarkGray" BorderThickness="1">
-            <avalonEdit:TextEditor Name="PSCEditor" ShowLineNumbers="True" Padding="0,0,10,0" FontFamily="Consolas" FontSize="14" WordWrap="True" Document="{Binding EditorDocument, Mode=TwoWay}" utilities:SyntaxHighlightingUtilities.BindHighlighting="{Binding ActiveFileType}" utilities:CodeFoldingUtilities.BindCodeFolding="{Binding ActiveFileType}"  Background="Transparent" Foreground="LightGray">
-                <avalonEdit:TextEditor.Resources>
+            <Grid>
+                <avalonEdit:TextEditor Name="PSCEditor" Visibility="{Binding IsImageFile, Converter={StaticResource InverseBoolToVisibilityConverter}}" ShowLineNumbers="True" Padding="0,0,10,0" FontFamily="Consolas" FontSize="14" WordWrap="True" Document="{Binding EditorDocument, Mode=TwoWay}" utilities:SyntaxHighlightingUtilities.BindHighlighting="{Binding ActiveFileType}" utilities:CodeFoldingUtilities.BindCodeFolding="{Binding ActiveFileType}"  Background="Transparent" Foreground="LightGray" >
+                    <avalonEdit:TextEditor.Resources>
 
-                    <Style TargetType="{x:Type avalonEdit:DropDownButton}">
-                        <Setter Property="Foreground" Value="White"/>
-                        <Setter Property="Background" Value="#000033"/>
-                    </Style>
+                        <Style TargetType="{x:Type avalonEdit:DropDownButton}">
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Background" Value="#000033"/>
+                        </Style>
 
-                    <!-- Search textbox -->
-                    <Style TargetType="TextBox">
-                        <Setter Property="Background" Value="#1E1E1E"/>
-                        <Setter Property="Foreground" Value="#D4D4D4"/>
-                        <Setter Property="BorderBrush" Value="#3F3F46"/>
-                        <Setter Property="BorderThickness" Value="1"/>
-                        <Setter Property="Padding" Value="4"/>
-                    </Style>
+                        <!-- Search textbox -->
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="#1E1E1E"/>
+                            <Setter Property="Foreground" Value="#D4D4D4"/>
+                            <Setter Property="BorderBrush" Value="#3F3F46"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                            <Setter Property="Padding" Value="4"/>
+                        </Style>
 
-                    <!-- Search buttons -->
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="#000033"/>
-                        <Setter Property="Foreground" Value="#D4D4D4"/>
-                        <Setter Property="BorderBrush" Value="Navy"/>
-                        <Setter Property="BorderThickness" Value="1"/>
-                    </Style>
+                        <!-- Search buttons -->
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="#000033"/>
+                            <Setter Property="Foreground" Value="#D4D4D4"/>
+                            <Setter Property="BorderBrush" Value="Navy"/>
+                            <Setter Property="BorderThickness" Value="1"/>
+                        </Style>
 
-                    <Style TargetType="CheckBox">
-                        <Setter Property="Foreground" Value="White"/>
-                    </Style>
+                        <Style TargetType="CheckBox">
+                            <Setter Property="Foreground" Value="White"/>
+                        </Style>
 
-                    <Style TargetType="ToggleButton" BasedOn="{StaticResource {x:Type Button}}"/>
+                        <Style TargetType="ToggleButton" BasedOn="{StaticResource {x:Type Button}}"/>
 
-                </avalonEdit:TextEditor.Resources>
-            </avalonEdit:TextEditor>
+                    </avalonEdit:TextEditor.Resources>
+                </avalonEdit:TextEditor>
+
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsImageFile, Converter={StaticResource BoolToVisibilityConverter}}" d:Visibility="Collapsed">
+                    <Grid>
+                        <Image Source="{Binding ImageData, Converter={StaticResource BinaryToBitmapConverter}}"
+           Stretch="None"
+           HorizontalAlignment="Center"
+           VerticalAlignment="Center"
+           RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+                        <!-- Fallback message when image failed to load -->
+                        <TextBlock Text="Unable to preview DDS file."
+               Foreground="White"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               FontFamily="pack://application:,,,/Resources/Fonts/#Euromode"
+               FontSize="30">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding ImageData}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
         </Border>
     </Grid>
 </views:MvxWpfView>
