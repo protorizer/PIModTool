@@ -37,7 +37,7 @@
             <Button Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="SaveSmallFButton_OnClick">Save SmallF.dat</Button>
         </StackPanel>
         <Border Grid.Row="2" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">
-            <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding Files}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}" BorderThickness="0" Background="Transparent" Foreground="LightGray">
+            <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding Files}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}"  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" BorderThickness="0" Background="Transparent" Foreground="LightGray">
                 <ListBox.Resources>
                     <ContextMenu x:Key="FileContextMenu">
                         <MenuItem Header="New File..."

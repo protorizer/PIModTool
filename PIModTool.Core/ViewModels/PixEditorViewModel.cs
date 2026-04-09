@@ -1,6 +1,9 @@
 ﻿using MvvmCross.Commands;
+using MvvmCross.IoC;
 using MvvmCross.Navigation;
 using MvvmCross.ViewModels;
+using PIModTool.Core.Types;
+using PIModTool.Core.ViewModels.PixEditorSubviews;
 using PIModTool.Lib;
 using PIModTool.Lib.Types;
 using System.Text;
@@ -10,21 +13,38 @@ namespace PIModTool.Core.ViewModels
 {
     public class PixEditorViewModel: MvxViewModel
     {
-        public IMvxCommand OpenPixCommand => new MvxAsyncCommand(OpenPix);
-        private IMessageService _messageService;
-        private IMvxNavigationService _navigationService;
-        private List<GenericFile>? _pixFiles;
+        // Services
+        private readonly IMessageService _messageService;
+        private readonly IMvxNavigationService _navigationService;
+        private readonly IMvxIoCProvider _iocProvider;
+
+        // Fields
+        private List<GenericFile>? _pixFiles = null;
+        private List<GenericFile>? _displayedFiles;
         private GenericFile? _activeFile;
+        private PixEditorFileType? _selectedEditor;
+        private MvxViewModel? _activeSubViewModel;
         private bool _busy;
         private string _loadingScreenMessage = "LOADING";
-        private DRPMesh? _activeMesh;
-        public List<GenericFile>? PixFiles
+
+        // Commands
+        public IMvxCommand OpenPixCommand => new MvxAsyncCommand(OpenPix);
+
+        private IMvxAsyncCommand? _exportDataCommand;
+        public IMvxCommand ExportDataCommand => _exportDataCommand ??= new MvxAsyncCommand(ExportData, () => ActiveSubViewModel is IPixEditorSubviewViewModel && ActiveFile != null);
+
+        public List<GenericFile>? DisplayedFiles
         {
-            get { return _pixFiles; }
+            get { return _displayedFiles; }
             set { 
-                SetProperty(ref  _pixFiles, value);
+                SetProperty(ref  _displayedFiles, value);
                 RaisePropertyChanged(() => LoadedFiles);
             }
+        }
+
+        public bool LoadedFiles
+        {
+            get { return _pixFiles != null; }
         }
 
         public GenericFile? ActiveFile
@@ -32,10 +52,46 @@ namespace PIModTool.Core.ViewModels
             get { return _activeFile; }
             set { 
                 SetProperty(ref _activeFile, value);
-                LoadModel();
+                
+                if(_activeSubViewModel is IPixEditorSubviewViewModel vm)
+                {
+                    vm.SetActiveFile(value);
+                }
+
+                ExportDataCommand.RaiseCanExecuteChanged();
             }
         }
-        
+
+        public List<PixEditorFileType> Editors { get; }
+        public PixEditorFileType? SelectedEditor
+        {
+            get { return _selectedEditor; }
+            set
+            {
+                SetProperty(ref _selectedEditor, value);
+                ActiveFile = null;
+
+                FilterFiles();
+                UpdateSubViewModel();
+            }
+        }
+
+        public MvxViewModel? ActiveSubViewModel
+        {
+            get { return _activeSubViewModel; }
+            set
+            {
+                SetProperty(ref _activeSubViewModel, value);
+                RaisePropertyChanged(nameof(HasActiveSubView));
+                ExportDataCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        public bool HasActiveSubView
+        {
+            get { return ActiveSubViewModel != null; }
+        }
+
         public bool Busy
         {
             get { return _busy; }
@@ -48,21 +104,20 @@ namespace PIModTool.Core.ViewModels
             set { SetProperty(ref _loadingScreenMessage, value); }
         }
 
-        public DRPMesh? ActiveMesh
+        public async Task ChangeView<TViewModel>() where TViewModel : MvxViewModel
         {
-            get { return _activeMesh; }
-            set { SetProperty(ref _activeMesh, value); }
+            await _navigationService.Navigate<TViewModel>();
         }
 
-        public PixEditorViewModel(IMessageService messageService, IMvxNavigationService navigationService)
+        public PixEditorViewModel(IMessageService messageService, IMvxNavigationService navigationService, IMvxIoCProvider ioCProvider)
         {
             _messageService = messageService;
             _navigationService = navigationService;
-        }
+            _iocProvider = ioCProvider;
 
-        public bool LoadedFiles
-        {
-            get { return PixFiles != null; }
+            Editors = new List<PixEditorFileType> {
+                new PixEditorFileType(".drp (3D Model)", FileType.DRP, _iocProvider.IoCConstruct<DRPEditorViewModel>())
+            };
         }
 
         private async Task OpenPix()
@@ -75,50 +130,62 @@ namespace PIModTool.Core.ViewModels
 
             Busy = true;
 
-            PixFiles = await Task.Run(async () =>
+            List<GenericFile>? files = await Task.Run(async () =>
             {
                 return await Lib.PixHandler.ReadPix(filePath);
             });
 
-            if(PixFiles == null)
+            if(files == null)
             {
                 await _messageService.ShowErrorAsync("An error occurred extracting your file.");
                 return;
             }
 
-            PixFiles = PixFiles.Where(x => x.Type == FileType.DRP).ToList();
+            _pixFiles = files;
+
+            SelectedEditor = null;
+            FilterFiles();
+            await RaisePropertyChanged(() => LoadedFiles);
 
             Busy = false;
         }
 
-        private async Task LoadModel()
+        private void FilterFiles()
         {
-            if(ActiveFile == null)
+            if(_pixFiles == null)
             {
+                DisplayedFiles = null;
                 return;
             }
-            (List<MeshVertex>? vertices, int vertexSectionEnd) = DRPHandler.GetVertexData(ActiveFile);
-            if(vertices == null || vertexSectionEnd < 0)
+
+            if(SelectedEditor == null)
             {
-                await _messageService.ShowNotifAsync("PIModTool couldn't find any vertices in this file. If this is an FX file, this is to be expected.");
-                vertices = new List<MeshVertex>();
-                //return;
+                DisplayedFiles = _pixFiles;
+                return;
             }
 
-            List<MeshFace>? faces = DRPHandler.GetFaceData(ActiveFile, vertexSectionEnd, vertices.Count);
-
-            if(faces == null)
-            {
-                await _messageService.ShowNotifAsync("PIModTool ran into an issue reading faces in this file. The model may display corrupted.");
-                faces = new List<MeshFace>();
-            }
-
-            ActiveMesh = new DRPMesh(vertices.ToArray(), faces.ToArray());
+            DisplayedFiles = _pixFiles.Where(x => x.Type == SelectedEditor.FileType).ToList();
         }
 
-        public async Task ChangeView<TViewModel>() where TViewModel : MvxViewModel
+        private void UpdateSubViewModel()
         {
-            await _navigationService.Navigate<TViewModel>();
+            if(SelectedEditor == null)
+            {
+                ActiveSubViewModel = null;
+                return;
+            }
+
+            IPixEditorSubviewViewModel editorViewModel = SelectedEditor.SubViewModel;
+            editorViewModel.SetActiveFile(ActiveFile);
+            ActiveSubViewModel = editorViewModel as MvxViewModel;
+        }
+
+        private async Task ExportData()
+        {
+            if(ActiveSubViewModel is IPixEditorSubviewViewModel editorViewModel)
+            {
+                await editorViewModel.ExportDataAsync();
+            }
         }
 
         public async Task<string?> ShowSaveOBJDialog()

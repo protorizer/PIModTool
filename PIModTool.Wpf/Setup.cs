@@ -2,6 +2,8 @@
 using MvvmCross;
 using MvvmCross.IoC;
 using MvvmCross.Platforms.Wpf.Core;
+using PIModTool.Core.Services;
+using PIModTool.Wpf.Services;
 using Serilog;
 using Serilog.Extensions.Logging;
 using System;
@@ -31,6 +33,7 @@ namespace PIModTool.Wpf
         protected override void InitializeFirstChance(IMvxIoCProvider iocProvider)
         {
             Mvx.IoCProvider.RegisterSingleton<IMessageService>(new WpfMessageService());
+            Mvx.IoCProvider.RegisterSingleton<IMeshExportService>(new WpfMeshExportService());
 
             base.InitializeFirstChance(iocProvider);
         }

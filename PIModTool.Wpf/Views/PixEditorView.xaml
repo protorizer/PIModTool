@@ -2,6 +2,8 @@
     xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
     xmlns:mvx="clr-namespace:MvvmCross.Platforms.Wpf.Binding;assembly=MvvmCross.Platforms.Wpf"
     xmlns:viewModels="clr-namespace:PIModTool.Core.ViewModels;assembly=PIModTool.Core"
+    xmlns:subViewModels="clr-namespace:PIModTool.Core.ViewModels.PixEditorSubviews;assembly=PIModTool.Core"
+    xmlns:subViews="clr-namespace:PIModTool.Wpf.Views.PixEditorSubviews"
     x:Class="PIModTool.Wpf.Views.PixEditorView"
     x:TypeArguments="viewModels:PixEditorViewModel"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,13 +12,17 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:PIModTool.Wpf.Views"
       xmlns:utilities="clr-namespace:PIModTool.Wpf.Utilities"
-      xmlns:helix="http://helix-toolkit.org/wpf"
       mc:Ignorable="d" 
       d:DesignHeight="720" d:DesignWidth="1280">
 
     <views:MvxWpfView.Resources>
         <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" True="Visible" False="Collapsed"/>
         <utilities:BooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" True="Collapsed" False="Visible"/>
+
+        <!-- Datatemplate for subviews -->
+        <DataTemplate DataType="{x:Type subViewModels:DRPEditorViewModel}">
+            <subViews:DRPEditorView />
+        </DataTemplate>
     </views:MvxWpfView.Resources>
 
     <Grid>
@@ -36,12 +42,19 @@
                 <ColumnDefinition Width="10"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Row="1" Grid.Column="1">
-                <Button Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="BackButton_OnClick">Back to Dashboard</Button>
-                <Button Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="ExportObjButton_OnClick">Export Selected File</Button>
-            </StackPanel>
+
+            <Button Grid.Row="1" Grid.Column="1" Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="BackButton_OnClick">Back to Dashboard</Button>
+            <Grid Grid.Row="1" Grid.Column="3" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox Grid.Column="0" Height="25" Margin="0,0,0,5" ItemsSource="{Binding Editors}" SelectedItem="{Binding SelectedEditor, Mode=TwoWay}" DisplayMemberPath="DisplayName" IsEnabled="{Binding LoadedFiles}" Text="Select Editor..." Foreground="White"/>
+                <Button Grid.Column="2" Height="25" Width="200" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Command="{Binding ExportDataCommand}">Export File</Button>
+            </Grid>
             <Border Grid.Row="2" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">
-                <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding PixFiles}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}" BorderThickness="0" Background="Transparent" Foreground="LightGray">
+                <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding DisplayedFiles}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" BorderThickness="0" Background="Transparent" Foreground="LightGray">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>
@@ -52,14 +65,10 @@
                 </ListBox>
             </Border>
 
-            <Border Grid.Row="1" Grid.Column="3" Grid.RowSpan="2" BorderBrush="DarkGray" BorderThickness="1">
+            <Border Grid.Row="2" Grid.Column="3" Grid.RowSpan="2" BorderBrush="DarkGray" BorderThickness="1">
                 <Grid>
                     <Button Width="200" Height="75" Command="{Binding OpenPixCommand}" Visibility="{Binding LoadedFiles, Converter={StaticResource InverseBoolToVisibilityConverter}}" Style="{StaticResource CustomButtonStyle}">Select a .pix file</Button>
-                    <helix:HelixViewport3D Visibility="{Binding LoadedFiles, Converter={StaticResource BoolToVisibilityConverter}}">
-                        <helix:SunLight/>
-                        <!-- <helix:PointsVisual3D x:Name="MeshPoints" Color="Red" Size="2"/> -->
-                        <ModelVisual3D x:Name="MeshViewer"/>
-                    </helix:HelixViewport3D>
+                    <ContentControl Content="{Binding ActiveSubViewModel}" Visibility="{Binding HasActiveSubView, Converter={StaticResource BoolToVisibilityConverter}}"/>
                 </Grid>
             </Border>
         </Grid>

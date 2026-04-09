@@ -22,6 +22,9 @@
     <Compile Update="Views\MainView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\PixEditorSubviews\DRPEditorView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\PixEditorView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
