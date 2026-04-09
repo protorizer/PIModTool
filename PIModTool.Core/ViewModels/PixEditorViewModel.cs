@@ -116,7 +116,9 @@ namespace PIModTool.Core.ViewModels
             _iocProvider = ioCProvider;
 
             Editors = new List<PixEditorFileType> {
-                new PixEditorFileType(".drp (3D Model)", FileType.DRP, _iocProvider.IoCConstruct<DRPEditorViewModel>())
+                new PixEditorFileType(".drp (3D Model)", FileType.DRP, _iocProvider.IoCConstruct<DRPEditorViewModel>()),
+                new PixEditorFileType(".p3m (PS3 Texture)", FileType.P3M, _iocProvider.IoCConstruct<P3MEditorViewModel>()),
+                //new PixEditorFileType(".x2m (Xbox 360 Texture)", FileType.X2M, _iocProvider.IoCConstruct<P3MEditorViewModel>())
             };
         }
 
@@ -160,7 +162,7 @@ namespace PIModTool.Core.ViewModels
 
             if(SelectedEditor == null)
             {
-                DisplayedFiles = _pixFiles;
+                DisplayedFiles = null;
                 return;
             }
 

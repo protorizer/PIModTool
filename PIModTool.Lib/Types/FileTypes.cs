@@ -6,5 +6,18 @@ using System.Threading.Tasks;
 
 namespace PIModTool.Lib.Types
 {
-    public enum FileType { XML, ObjectScript, EventScript, PSCScript, PitaText, DDS, UnknownText, UnknownBinary, Unknown, DRP }
+    public enum FileType { 
+        XML, 
+        ObjectScript, 
+        EventScript, 
+        PSCScript, 
+        PitaText, 
+        DDS, 
+        UnknownText, 
+        UnknownBinary, 
+        Unknown, 
+        DRP,
+        X2M,
+        P3M
+    }
 }

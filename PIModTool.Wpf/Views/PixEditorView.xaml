@@ -23,6 +23,9 @@
         <DataTemplate DataType="{x:Type subViewModels:DRPEditorViewModel}">
             <subViews:DRPEditorView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type subViewModels:P3MEditorViewModel}">
+            <subViews:P3MEditorView />
+        </DataTemplate>
     </views:MvxWpfView.Resources>
 
     <Grid>
@@ -50,7 +53,7 @@
                     <ColumnDefinition Width="10"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <ComboBox Grid.Column="0" Height="25" Margin="0,0,0,5" ItemsSource="{Binding Editors}" SelectedItem="{Binding SelectedEditor, Mode=TwoWay}" DisplayMemberPath="DisplayName" IsEnabled="{Binding LoadedFiles}" Text="Select Editor..." Foreground="White"/>
+                <ComboBox Grid.Column="0" Height="25" Margin="0,0,0,5" ItemsSource="{Binding Editors}" SelectedItem="{Binding SelectedEditor, Mode=TwoWay}" DisplayMemberPath="DisplayName" IsEnabled="{Binding LoadedFiles}" Text="Select Editor..." Foreground="LightGray"/>
                 <Button Grid.Column="2" Height="25" Width="200" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Command="{Binding ExportDataCommand}">Export File</Button>
             </Grid>
             <Border Grid.Row="2" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">

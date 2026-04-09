@@ -71,6 +71,12 @@ namespace PIModTool.Lib
                                         case ".drp":
                                             type = FileType.DRP;
                                             break;
+                                        case ".x2m":
+                                            type = FileType.X2M;
+                                            break;
+                                        case ".p3m":
+                                            type = FileType.P3M;
+                                            break;
                                         default:
                                             type = FileType.UnknownBinary;
                                             break;
