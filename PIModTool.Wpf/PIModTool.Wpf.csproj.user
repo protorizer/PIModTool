@@ -16,6 +16,9 @@
     <Compile Update="Views\Components\SmallFEditorNewFilePopupWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\Components\TextureView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\LoadingView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

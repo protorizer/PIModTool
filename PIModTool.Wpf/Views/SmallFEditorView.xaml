@@ -130,34 +130,27 @@
 
                     </avalonEdit:TextEditor.Resources>
                 </avalonEdit:TextEditor>
-
-                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Visibility="{Binding IsImageFile, Converter={StaticResource BoolToVisibilityConverter}}" d:Visibility="Collapsed">
-                    <Grid>
-                        <Image Source="{Binding ImageData, Converter={StaticResource BinaryToBitmapConverter}}"
-           Stretch="None"
-           HorizontalAlignment="Center"
-           VerticalAlignment="Center"
-           RenderOptions.BitmapScalingMode="NearestNeighbor"/>
-                        <!-- Fallback message when image failed to load -->
-                        <TextBlock Text="Unable to preview DDS file."
+                <Grid>
+                    <components:TextureView Source="{Binding ImageData, Converter={StaticResource BinaryToBitmapConverter}}"/>
+                    <!-- Fallback message when image failed to load -->
+                    <TextBlock Text="Unable to preview DDS file."
                Foreground="White"
                HorizontalAlignment="Center"
                VerticalAlignment="Center"
                FontFamily="pack://application:,,,/Resources/Fonts/#Euromode"
                FontSize="30">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ImageData}" Value="{x:Null}">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </Grid>
-                </ScrollViewer>
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ImageData}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

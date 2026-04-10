@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace PIModTool.Lib
 {
@@ -17,6 +18,24 @@ namespace PIModTool.Lib
             {
                 using MemoryStream dataStream = new MemoryStream(data);
                 using ZLibStream deflateStream = new ZLibStream(dataStream, CompressionMode.Decompress);
+                using MemoryStream outputStream = new MemoryStream();
+
+                deflateStream.CopyTo(outputStream);
+                return outputStream.ToArray();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // Attempts to zlib-compress a binary chunk
+        private static byte[]? TryCompressZlib(byte[] data)
+        {
+            try
+            {
+                using MemoryStream dataStream = new MemoryStream(data);
+                using ZLibStream deflateStream = new ZLibStream(dataStream, CompressionMode.Compress);
                 using MemoryStream outputStream = new MemoryStream();
 
                 deflateStream.CopyTo(outputStream);
@@ -99,6 +118,50 @@ namespace PIModTool.Lib
             }
             Debug.WriteLine("Found " + contents.Count + " files");
             return contents;
+        }
+
+        // Writes a .pix file
+        public static async Task WritePix(List<GenericFile> data, string fileName)
+        {
+            try
+            {
+                using FileStream pixFile = File.OpenWrite(fileName);
+                using BinaryWriter pixWriter = new BinaryWriter(pixFile);
+
+                foreach(GenericFile file in data)
+                {
+                    // Prepare data packet (header + data)
+                    using MemoryStream fileStream = new MemoryStream();
+                    using BinaryWriter fileWriter = new BinaryWriter(fileStream);
+                    fileWriter.Write(1); // Num files in chunk = 1
+                    fileWriter.Write(file.Data.Length); // fileSize
+                    fileWriter.Write(Encoding.UTF8.GetBytes(file.Path)); // path
+                    fileWriter.Write('\0'); // null terminator
+                    fileWriter.Write(file.Data); // Actual data
+
+                    // Zlib compress data
+                    byte[]? compressedData = TryCompressZlib(fileStream.ToArray());
+                    if (compressedData == null)
+                    {
+                        throw new Exception("Failed to compress file");
+                    }
+
+                    // Write zSize, size
+                    pixWriter.Write(compressedData.Length);
+                    pixWriter.Write(fileStream.Length);
+
+                    // Pad to 0x800 padded boundaries
+                    // TODO
+
+                    // Write data
+                    pixWriter.Write(compressedData);
+                }
+            }
+            catch(Exception e)
+            {
+                Debug.Fail(e.Message);
+                return;
+            }
         }
     }
 }

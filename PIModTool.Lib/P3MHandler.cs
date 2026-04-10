@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PIModTool.Lib.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -76,6 +77,24 @@ namespace PIModTool.Lib
 
             Buffer.BlockCopy(header, 0, result, 0, header.Length);
             Buffer.BlockCopy(p3m, 32, result, header.Length, p3m.Length - 32);
+
+            return result;
+        }
+
+        // Extract the corresponding HD texture from textures.pit
+        public static byte[] GetHighResTexture(byte[] p3m, GenericFile pit)
+        {
+            int hdWidth = BitConverter.ToInt16(p3m, 4);
+            int hdHeight = BitConverter.ToInt16(p3m, 6);
+
+            int hdFileSize = BitConverter.ToInt32(p3m, 24);
+            int hdFileOffset = BitConverter.ToInt32(p3m, 28);
+
+            byte[] header = CreateDDSHeader(hdWidth, hdHeight);
+            byte[] result = new byte[header.Length +  hdFileSize];
+
+            Buffer.BlockCopy(header, 0, result, 0, header.Length);
+            Buffer.BlockCopy(pit.Data, hdFileOffset, result, header.Length, hdFileSize);
 
             return result;
         }

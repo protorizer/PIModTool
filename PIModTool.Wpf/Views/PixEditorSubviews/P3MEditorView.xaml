@@ -10,12 +10,13 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:helix="http://helix-toolkit.org/wpf"
       xmlns:local="clr-namespace:PIModTool.Wpf.Views.PixEditorSubviews"
+      xmlns:components="clr-namespace:PIModTool.Wpf.Views.Components"
       mc:Ignorable="d" 
       d:DesignHeight="720" d:DesignWidth="1280">
 
     <Grid>
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <Image Source="{Binding ActiveTexture, Converter={StaticResource BinaryToBitmapConverter}}" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+            <components:TextureView Source="{Binding ActiveTexture, Converter={StaticResource BinaryToBitmapConverter}}"/>
         </ScrollViewer>
     </Grid>
 </views:MvxWpfView>
