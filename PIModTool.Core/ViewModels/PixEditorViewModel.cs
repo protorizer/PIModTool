@@ -134,7 +134,7 @@ namespace PIModTool.Core.ViewModels
 
             List<GenericFile>? files = await Task.Run(async () =>
             {
-                return await Lib.PixHandler.ReadPix(filePath);
+                return await PixHandler.ReadPix(filePath);
             });
 
             if(files == null)

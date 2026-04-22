@@ -11,12 +11,31 @@
       xmlns:helix="http://helix-toolkit.org/wpf"
       xmlns:local="clr-namespace:PIModTool.Wpf.Views.PixEditorSubviews"
       xmlns:components="clr-namespace:PIModTool.Wpf.Views.Components"
+      xmlns:utilities="clr-namespace:PIModTool.Wpf.Utilities"
       mc:Ignorable="d" 
       d:DesignHeight="720" d:DesignWidth="1280">
 
-    <Grid>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <components:TextureView Source="{Binding ActiveTexture, Converter={StaticResource BinaryToBitmapConverter}}"/>
-        </ScrollViewer>
-    </Grid>
+    <views:MvxWpfView.Resources>
+        <utilities:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" True="Visible" False="Collapsed"/>
+        <utilities:BooleanToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" True="Collapsed" False="Visible"/>
+    </views:MvxWpfView.Resources>
+
+    <TabControl Background="Transparent" SelectedIndex="{Binding SelectedTab}">
+        <TabItem>
+            <TabItem.Header>
+                <TextBlock Text="Standard Texture" Foreground="LightGray"/>
+            </TabItem.Header>
+                <components:TextureView Source="{Binding ActiveTexture, Converter={StaticResource BinaryToBitmapConverter}}"/>
+            </TabItem>
+        <TabItem>
+            <TabItem.Header>
+                <TextBlock Text="HD Texture" Foreground="LightGray"/>
+            </TabItem.Header>
+            <Grid>
+                <Button Width="200" Height="75" Command="{Binding OpenPitCommand}" Visibility="{Binding LoadedPit, Converter={StaticResource InverseBoolToVisibilityConverter}}" Style="{StaticResource CustomButtonStyle}">Open textures.pit</Button>
+                <components:TextureView Source="{Binding ActiveTextureHD, Converter={StaticResource BinaryToBitmapConverter}}" Visibility="{Binding LoadedPit, Converter={StaticResource BoolToVisibilityConverter}}"/>
+            </Grid>
+        </TabItem>
+    </TabControl>
+
 </views:MvxWpfView>

@@ -57,7 +57,7 @@
                 <Button Grid.Column="2" Height="25" Width="200" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Command="{Binding ExportDataCommand}">Export File</Button>
             </Grid>
             <Border Grid.Row="2" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">
-                <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding DisplayedFiles}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" BorderThickness="0" Background="Transparent" Foreground="LightGray">
+                <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding DisplayedFiles}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}" BorderThickness="0" Background="Transparent" Foreground="LightGray">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel>

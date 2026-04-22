@@ -64,6 +64,8 @@ namespace PIModTool.Lib
                             int zSize = reader.ReadInt32();
                             int size = reader.ReadInt32();
 
+                            Debug.WriteLine(zSize);
+
                             if (zSize == 0) break;
 
                             pixFile.Position = (pixFile.Position + 0x7FF) & ~0x7FFL; // Align to a 0x800 padded boundary
@@ -76,12 +78,20 @@ namespace PIModTool.Lib
                                 throw new Exception("Bad zlib chunk");
                             }
 
-                            using (BinaryReader chunkReader = new BinaryReader(new MemoryStream(decompressedData)))
+                            using MemoryStream dataStream = new MemoryStream(decompressedData);
+                            using (BinaryReader chunkReader = new BinaryReader(dataStream))
                             {
                                 int numFiles = chunkReader.ReadInt32();
                                 for (int i = 0; i < numFiles; i++)
                                 {
                                     int fileSize = chunkReader.ReadInt32();
+
+                                    // Corrupted streams sometimes show up in prototypes liek DCAP - unsure if it's a difference in file format or if the builds are corrupted
+                                    if (fileSize <= 0 || fileSize > (dataStream.Length - dataStream.Position))
+                                    {
+                                        Debug.WriteLine("Skipping corrupted or empty stream");
+                                        break;
+                                    }
                                     string path = chunkReader.ReadNullTerminatedString();
                                     byte[] fileData = chunkReader.ReadBytes(fileSize);
                                     FileType type;

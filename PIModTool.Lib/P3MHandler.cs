@@ -82,7 +82,7 @@ namespace PIModTool.Lib
         }
 
         // Extract the corresponding HD texture from textures.pit
-        public static byte[] GetHighResTexture(byte[] p3m, GenericFile pit)
+        public static byte[] GetHighResTexture(byte[] p3m, byte[] pit)
         {
             int hdWidth = BitConverter.ToInt16(p3m, 4);
             int hdHeight = BitConverter.ToInt16(p3m, 6);
@@ -94,7 +94,7 @@ namespace PIModTool.Lib
             byte[] result = new byte[header.Length +  hdFileSize];
 
             Buffer.BlockCopy(header, 0, result, 0, header.Length);
-            Buffer.BlockCopy(pit.Data, hdFileOffset, result, header.Length, hdFileSize);
+            Buffer.BlockCopy(pit, hdFileOffset, result, header.Length, hdFileSize);
 
             return result;
         }
