@@ -130,7 +130,7 @@
 
                     </avalonEdit:TextEditor.Resources>
                 </avalonEdit:TextEditor>
-                <Grid>
+                <Grid Visibility="{Binding IsImageFile, Converter={StaticResource BoolToVisibilityConverter}}" >
                     <components:TextureView Source="{Binding ImageData, Converter={StaticResource BinaryToBitmapConverter}}"/>
                     <!-- Fallback message when image failed to load -->
                     <TextBlock Text="Unable to preview DDS file."
