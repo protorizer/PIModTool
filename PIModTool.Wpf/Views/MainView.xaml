@@ -59,7 +59,7 @@
         <!-- 3D Section -->
         <components:MenuBoxView Grid.Row="5" Grid.Column="5" Label="Models and Textures" HeaderPadding="5">
             <StackPanel Grid.Row="6" Grid.Column="3" Margin="10" VerticalAlignment="Center">
-                <Button Width="200" Height="50" Style="{StaticResource CustomButtonStyle}" Margin="5" Click="PixEditor_OnClick">Pix Asset Viewer (WIP)</Button>
+                <Button Width="200" Height="50" Style="{StaticResource CustomButtonStyle}" Margin="5" Click="PixEditor_OnClick">Pix Asset Viewer</Button>
             </StackPanel>
         </components:MenuBoxView>
 

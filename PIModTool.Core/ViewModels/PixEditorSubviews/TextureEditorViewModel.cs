@@ -5,7 +5,7 @@ using PIModTool.Lib;
 
 namespace PIModTool.Core.ViewModels.PixEditorSubviews
 {
-    public class P3MEditorViewModel : MvxViewModel, IPixEditorSubviewViewModel
+    public class TextureEditorViewModel : MvxViewModel, IPixEditorSubviewViewModel
     {
         private readonly IMessageService _messageService;
         private GenericFile? _activeFile;
@@ -16,7 +16,7 @@ namespace PIModTool.Core.ViewModels.PixEditorSubviews
 
         public IMvxCommand OpenPitCommand => new MvxAsyncCommand(OpenPit);
 
-        public P3MEditorViewModel(IMessageService messageService)
+        public TextureEditorViewModel(IMessageService messageService)
         {
             _messageService = messageService;
         }
@@ -129,11 +129,11 @@ namespace PIModTool.Core.ViewModels.PixEditorSubviews
                 ActiveTexture = null;
                 return;
             }
-            ActiveTexture = P3MHandler.ConvertToDDS(ActiveFile.Data);
+            ActiveTexture = TextureHandler.ConvertToDDS(ActiveFile.Data);
 
             if (LoadedPit)
             {
-                ActiveTextureHD = P3MHandler.GetHighResTexture(ActiveFile.Data, PitFile);
+                ActiveTextureHD = TextureHandler.ConvertToDDS(ActiveFile.Data, true, PitFile);
             }
         }
     }

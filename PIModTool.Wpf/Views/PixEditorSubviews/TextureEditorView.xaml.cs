@@ -8,9 +8,9 @@ namespace PIModTool.Wpf.Views.PixEditorSubviews
     /// <summary>
     /// Interaction logic for X2MEditorView.xaml
     /// </summary>
-    public partial class P3MEditorView : MvxWpfView<P3MEditorViewModel>
+    public partial class TextureEditorView : MvxWpfView<TextureEditorViewModel>
     {
-        public P3MEditorView()
+        public TextureEditorView()
         {
             InitializeComponent();
         }

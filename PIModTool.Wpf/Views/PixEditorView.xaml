@@ -23,8 +23,8 @@
         <DataTemplate DataType="{x:Type subViewModels:DRPEditorViewModel}">
             <subViews:DRPEditorView />
         </DataTemplate>
-        <DataTemplate DataType="{x:Type subViewModels:P3MEditorViewModel}">
-            <subViews:P3MEditorView />
+        <DataTemplate DataType="{x:Type subViewModels:TextureEditorViewModel}">
+            <subViews:TextureEditorView />
         </DataTemplate>
     </views:MvxWpfView.Resources>
 

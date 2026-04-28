@@ -27,6 +27,7 @@
     <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
     <PackageReference Include="HelixToolkit.Wpf" Version="3.1.2" />
     <PackageReference Include="MvvmCross.Platforms.Wpf" Version="9.3.0" />
+    <PackageReference Include="Pfim" Version="0.11.4" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.0" />
   </ItemGroup>
 
@@ -49,7 +50,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Update="Views\PixEditorSubviews\P3MEditorView.xaml.cs">
+    <Compile Update="Views\PixEditorSubviews\TextureEditorView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
