@@ -56,6 +56,12 @@ namespace PIModTool.Lib.Utilities
             byte[] imageData = new byte[tex.Length - offset];
             Buffer.BlockCopy(tex, offset, imageData, 0, imageData.Length);
 
+            // If the texture is the size of 1 block or less, it can't be swizzled
+            if (imageWidth < 64 || imageHeight < 64)
+            {
+                return imageData;
+            }
+
             int blockPixelSize = 4; // Comprepssed DDS has 4 pixels per block
             int widthInBlocks = Math.Max(1, imageWidth / blockPixelSize);
             int heightInBlocks = Math.Max(1, imageHeight / blockPixelSize);
