@@ -256,7 +256,6 @@ namespace PIModTool.Lib
                     break;
                 default:
                     return -2;
-                    break;
             }
             if(texFormat != ddsFormat)
             {
@@ -269,6 +268,15 @@ namespace PIModTool.Lib
             if(texMipMaps != ddsMipMaps)
             {
                 return -3;
+            }
+
+            // X360 prep
+            if (isX360)
+            {
+                // Swap to big endian
+                Xbox360Utils.SwapEndianShort(dds);
+                // Swizzle texture
+                dds = Xbox360Utils.ConvertX360Image(dds, 0, ddsWidth, ddsHeight, ddsFormat == DDSType.DXT1 ? 8 : 16, true);
             }
 
             // Write data

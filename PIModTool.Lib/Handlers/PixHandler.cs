@@ -161,11 +161,20 @@ namespace PIModTool.Lib
                     pixWriter.Write(fileStream.Length);
 
                     // Pad to 0x800 padded boundaries
-                    // TODO
+                    long dataOffset = (pixFile.Position + 0x7FF) & ~0x7FFL;
+                    long numPadding = dataOffset - pixFile.Position;
+                    for (int i = 0; i < numPadding; i++)
+                    {
+                        pixWriter.Write('\0');
+                    }
 
                     // Write data
                     pixWriter.Write(compressedData);
                 }
+
+                // Write empty entry to denote EOF
+                pixWriter.Write(0); // Empty zSize
+                pixWriter.Write(0); // Empty size
             }
             catch(Exception e)
             {
