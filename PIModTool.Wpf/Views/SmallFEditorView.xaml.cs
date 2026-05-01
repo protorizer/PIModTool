@@ -167,36 +167,6 @@ namespace PIModTool.Wpf.Views
             }
         }
 
-        private void FileNameTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (sender is TextBox tb && tb.DataContext is SmallFFile file)
-            {
-                var vm = (SmallFEditorViewModel)DataContext;
-                if (e.Key == Key.Enter)
-                    vm.EndRenameCommand.Execute(file);
-                else if (e.Key == Key.Escape)
-                    vm.RenamingFile = null;
-            }
-        }
-
-        private void FileNameTextBox_LostFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb && tb.DataContext is SmallFFile file)
-            {
-                var vm = (SmallFEditorViewModel)DataContext;
-                vm.EndRenameCommand.Execute(file);
-            }
-        }
-
-        private void FileNameTextBox_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb)
-            {
-                tb.Focus();
-                tb.SelectAll();
-            }
-        }
-
         private void ExportFilesButton_OnClick(object sender, EventArgs args)
         {
             string? folderPath = FileSystemUtilities.OpenFolder("Select folder to extract contents");

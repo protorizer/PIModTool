@@ -37,62 +37,7 @@
             <Button Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="SaveSmallFButton_OnClick">Save SmallF.dat</Button>
         </StackPanel>
         <Border Grid.Row="2" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">
-            <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding Files}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}"  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel" BorderThickness="0" Background="Transparent" Foreground="LightGray">
-                <ListBox.Resources>
-                    <ContextMenu x:Key="FileContextMenu">
-                        <MenuItem Header="New File..."
-      Command="{Binding DataContext.CreateNewFileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}" />
-                        <Separator/>
-                        <MenuItem Header="Rename"
-      Command="{Binding DataContext.BeginRenameCommand,
-                        RelativeSource={RelativeSource AncestorType=ListBox}}"
-      CommandParameter="{Binding}" />
-                        <MenuItem Header="Export Selected File"
-      Command="{Binding DataContext.ExportFileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-      CommandParameter="{Binding}"/>
-                    </ContextMenu>
-                </ListBox.Resources>
-
-                <ListBox.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
-                        <Setter Property="ContextMenu"
-    Value="{StaticResource FileContextMenu}" />
-                    </Style>
-                </ListBox.ItemContainerStyle>
-
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Path}" Margin="4,2">
-                                <TextBlock.Visibility>
-                                    <MultiBinding Converter="{StaticResource FileRenameVisibilityMultiConverter}" ConverterParameter="Display">
-                                        <Binding Path="DataContext.RenamingFile" RelativeSource="{RelativeSource AncestorType=ListBox}" />
-                                        <Binding Path="." />
-                                        <!-- current item -->
-                                    </MultiBinding>
-                                </TextBlock.Visibility>
-                            </TextBlock>
-                            <TextBox Text="{Binding Path, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     Background="#202020"
-                     Foreground="LightGray"
-                     BorderThickness="1"
-                     BorderBrush="DarkGray"
-                     Padding="1"
-                     KeyDown="FileNameTextBox_KeyDown"
-                     LostFocus="FileNameTextBox_LostFocus"
-                     Loaded="FileNameTextBox_Loaded">
-                                <TextBox.Visibility>
-                                    <MultiBinding Converter="{StaticResource FileRenameVisibilityMultiConverter}" ConverterParameter="Edit">
-                                        <Binding Path="DataContext.RenamingFile" RelativeSource="{RelativeSource AncestorType=ListBox}" />
-                                        <Binding Path="." />
-                                        <!-- current item -->
-                                    </MultiBinding>
-                                </TextBox.Visibility>
-                            </TextBox>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <components:FileTreeNodeView Width="200" Files="{Binding Files}" EnableContextMenu="True" SelectedFile="{Binding ActiveFile, Mode=TwoWay}" EnableRename="True" NewFileCommand="{Binding CreateNewFileCommand}" ExportFileCommand="{Binding ExportFileCommand}"/>
         </Border>
 
         <Border Grid.Row="1" Grid.Column="3" Grid.RowSpan="2" BorderBrush="DarkGray" BorderThickness="1">

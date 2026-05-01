@@ -18,11 +18,8 @@ namespace PIModTool.Core.ViewModels
 		private ObservableCollection<SmallFFile> _files = new ObservableCollection<SmallFFile>();
         private SmallFFile? _activeFile;
         private FileType _activeFileType;
-        private SmallFFile? _renamingFile;
         private bool _isImageFile;
         private byte[] _imageData;
-        public IMvxCommand<SmallFFile> BeginRenameCommand => new MvxCommand<SmallFFile>(StartRenameFile);
-        public IMvxCommand EndRenameCommand => new MvxCommand(EndRenameFile);
         private readonly Dictionary<SmallFFile, TextDocument> _fileDocuments = new Dictionary<SmallFFile, TextDocument>();
         private TextDocument _editorDocument = new TextDocument();
 
@@ -46,7 +43,6 @@ namespace PIModTool.Core.ViewModels
 			get { return _files; }
 			set { 
                 SetProperty(ref _files, value);
-                SortFiles();
             }
 		}
 
@@ -71,12 +67,6 @@ namespace PIModTool.Core.ViewModels
         {
             get { return _activeFileType; }
             set { SetProperty(ref _activeFileType, value); }
-        }
-
-        public SmallFFile? RenamingFile
-        {
-            get { return _renamingFile; }
-            set { SetProperty(ref _renamingFile, value); }
         }
 
         public bool IsImageFile
@@ -164,22 +154,6 @@ namespace PIModTool.Core.ViewModels
                 file.Data = Encoding.UTF8.GetBytes(fileDoc.Text);
             }
         }
-        private void SortFiles()
-        {
-            var sorted = Files.OrderBy(f => f.Path).ToList();
-            Files.Clear();
-            foreach (var file in sorted)
-                Files.Add(file);
-        }
-
-        private void StartRenameFile(SmallFFile? file)
-        {
-            RenamingFile = file;
-        }
-        private void EndRenameFile()
-        {
-            RenamingFile = null;
-        }
 
         public async Task CreateNewFileAsync()
         {
@@ -197,7 +171,6 @@ namespace PIModTool.Core.ViewModels
 
             // Add new entry to ObservableCollection
             Files.Add(smallFFile);
-            SortFiles();
         }
 
         public void ValidateSyntax()

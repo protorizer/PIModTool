@@ -10,6 +10,9 @@
     <Compile Update="Views\Components\AudioStemView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\Components\FileTreeNodeView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\Components\MenuBoxView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

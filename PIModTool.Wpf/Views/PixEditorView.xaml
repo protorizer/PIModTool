@@ -11,6 +11,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:PIModTool.Wpf.Views"
+      xmlns:components="clr-namespace:PIModTool.Wpf.Views.Components"
       xmlns:utilities="clr-namespace:PIModTool.Wpf.Utilities"
       mc:Ignorable="d" 
       d:DesignHeight="720" d:DesignWidth="1280">
@@ -57,15 +58,7 @@
                 <Button Grid.Column="2" Height="25" Width="200" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Command="{Binding ExportDataCommand}">Export File</Button>
             </Grid>
             <Border Grid.Row="2" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">
-                <ListBox ScrollViewer.HorizontalScrollBarVisibility="Hidden" Width="200" ItemsSource="{Binding DisplayedFiles}" SelectedItem="{Binding ActiveFile, Mode=TwoWay}" BorderThickness="0" Background="Transparent" Foreground="LightGray">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Path}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Path}" Margin="4,2"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <components:FileTreeNodeView Width="200" Files="{Binding DisplayedFiles}" SelectedFile="{Binding ActiveFile, Mode=TwoWay}" EnableRename="False"/>
             </Border>
 
             <Border Grid.Row="2" Grid.Column="3" Grid.RowSpan="2" BorderBrush="DarkGray" BorderThickness="1">

@@ -64,7 +64,7 @@ namespace PIModTool.Lib
                             int zSize = reader.ReadInt32();
                             int size = reader.ReadInt32();
 
-                            Debug.WriteLine(zSize);
+                            //Debug.WriteLine(zSize);
 
                             if (zSize == 0) break;
 
