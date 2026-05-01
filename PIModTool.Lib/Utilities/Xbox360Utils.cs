@@ -57,7 +57,7 @@ namespace PIModTool.Lib.Utilities
             Buffer.BlockCopy(tex, offset, imageData, 0, imageData.Length);
 
             // If the texture is the size of 1 block or less, it can't be swizzled
-            if (imageWidth < 64 || imageHeight < 64)
+            if (imageWidth < 16 || imageHeight < 16)
             {
                 return imageData;
             }
