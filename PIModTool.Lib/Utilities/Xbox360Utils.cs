@@ -5,104 +5,108 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PIModTool.Lib.Utilities
 {
     // Utilities related to X360-spedific file manipulation
+    // Swizzling logic adopted from https://github.com/bartlomiejduda/ReverseBox/blob/main/reversebox/image/swizzling/swizzle_x360.py
 
     public static class Xbox360Utils
     {
-        private static int XGAddress2DTiledX(int offset, int widthInBlocks, int texelPitch)
+        private static int XGAddress2DTiledX(int blockOffset, int widthInBlocks, int texelBytePitch)
         {
             int alignedWidth = (widthInBlocks + 31) & ~31;
-            int logBpp = Math.ILogB(texelPitch);
+            int logBpp = Math.ILogB(texelBytePitch);
+            int offsetByte = blockOffset << logBpp;
+            int offsetTile = (((offsetByte & ~0xFFF) >> 3) + ((offsetByte & 0x700) >> 2) + (offsetByte & 0x3F));
+            int offsetMacro = offsetTile >> (7 + logBpp);
 
-            int offsetB = offset << logBpp;
-            int offsetT = ((offsetB & ~4095) >> 3) + ((offsetB & 1792) >> 2) + (offsetB & 63);
-            int offsetM = offsetT >> (7 + logBpp);
-
-            int macroX = ((offsetM % (alignedWidth >> 5)) << 2);
-            int tile = ((((offsetT >> (5 + logBpp)) & 2) + (offsetB >> 6)) & 3);
+            int macroX = (offsetMacro % (alignedWidth >> 5)) << 2;
+            int tile = (((offsetTile >> (5 + logBpp)) & 2) + (offsetByte >> 6)) & 3;
             int macro = (macroX + tile) << 3;
-
-            int micro = ((((offsetT >> 1) & ~15) + (offsetT & 15)) & ((texelPitch << 3) - 1)) >> logBpp;
+            int micro = ((((offsetTile >> 1) & ~0xF) + (offsetTile & 0xF)) & ((texelBytePitch << 3) - 1)) >> logBpp;
 
             return macro + micro;
         }
 
-        private static int XGAddress2DTiledY(int offset, int widthInBlocks, int texelPitch)
+        private static int XGAddress2DTiledY(int blockOffset, int widthInBlocks, int texelBytePitch)
         {
             int alignedWidth = (widthInBlocks + 31) & ~31;
-            int logBpp = Math.ILogB(texelPitch);
+            int logBpp = Math.ILogB(texelBytePitch);
+            int offsetByte = blockOffset << logBpp;
+            int offsetTile = (((offsetByte & ~0xFFF) >> 3) + ((offsetByte & 0x700) >> 2) + (offsetByte & 0x3F));
+            int offsetMacro = offsetTile >> (7 + logBpp);
 
-            int offsetB = offset << logBpp;
-            int offsetT = ((offsetB & ~4095) >> 3) + ((offsetB & 1792) >> 2) + (offsetB & 63);
-            int offsetM = offsetT >> (7 + logBpp);
-
-            int macroY = ((offsetM / (alignedWidth >> 5)) << 2);
-            int tile = ((offsetT >> (6 + logBpp)) & 1) + (((offsetB & 2048) >> 10));
+            int macroY = (offsetMacro / (alignedWidth >> 5)) << 2;
+            int tile = ((offsetTile >> (6 + logBpp)) & 1) + ((offsetByte & 0x800) >> 10);
             int macro = (macroY + tile) << 3;
+            int micro = (((offsetTile & ((texelBytePitch << 6) - 1 & ~0x1F)) + ((offsetTile & 0xF) << 1)) >> (3 + logBpp)) & ~1;
 
-            int micro = ((((offsetT & (((texelPitch << 6) - 1) & ~31)) + ((offsetT & 15) << 1))
-                           >> (3 + logBpp)) & ~1);
-
-            return macro + micro + ((offsetT & 16) >> 4);
+            return macro + micro + ((offsetTile & 0x10) >> 4);
         }
 
-        // Untiles a tiled & swizzled Xbox 360 texture
-        public static byte[] Untile360DXT(byte[] source, int offset, int width, int height, int blockBytes, bool swapEndian16 = true)
+        /*
+         * Convert image data to/from X360 format
+         * texelBytePitch: 8 for DXT1, otherwise 16
+         * convertBack: re-swizzle back to X360 instead of decoding
+         */
+        public static byte[] ConvertX360Image(byte[] tex, int offset, int imageWidth, int imageHeight, int texelBytePitch, bool convertBack=false)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (width <= 0 || height <= 0) throw new ArgumentOutOfRangeException("Width and height must be positive.");
-            if (blockBytes != 8 && blockBytes != 16)
-                throw new ArgumentException("blockBytes must be 8 (DXT1) or 16 (DXT3/DXT5/ATI2).");
+            byte[] imageData = new byte[tex.Length - offset];
+            Buffer.BlockCopy(tex, offset, imageData, 0, imageData.Length);
 
-            int blockWidth = Math.Max(1, width / 4);
-            int blockHeight = Math.Max(1, height / 4);
-            int alignedBlockWidth = (blockWidth + 31) & ~31;
-            int alignedBlockHeight = (blockHeight + 31) & ~31;
+            int blockPixelSize = 4; // Comprepssed DDS has 4 pixels per block
+            int widthInBlocks = Math.Max(1, imageWidth / blockPixelSize);
+            int heightInBlocks = Math.Max(1, imageHeight / blockPixelSize);
 
-            int linearSize = blockWidth * blockHeight * blockBytes;
+            int paddedWidthInBlocks = (widthInBlocks + 31) & ~31;
+            int paddedHeightInBlocks = (heightInBlocks + 31) & ~31;
+            int totalPaddedBlocks = paddedWidthInBlocks * paddedHeightInBlocks;
 
-            if (source.Length - offset < linearSize)
-                throw new ArgumentException("Source buffer is smaller than the requested texture size.");
+            byte[] convertedData = convertBack
+                ? new byte[totalPaddedBlocks * texelBytePitch]
+                : new byte[widthInBlocks * heightInBlocks * texelBytePitch];
 
-            byte[] input = new byte[source.Length - offset];
-            Buffer.BlockCopy(source, offset, input, 0, input.Length);
-            if (swapEndian16)
+            for (int blockOffset = 0; blockOffset < totalPaddedBlocks; blockOffset++)
             {
-                for (int i = 0; i + 1 < input.Length; i += 2)
-                    (input[i], input[i + 1]) = (input[i + 1], input[i]);
-            }
+                int x = XGAddress2DTiledX(blockOffset, paddedWidthInBlocks, texelBytePitch);
+                int y = XGAddress2DTiledY(blockOffset, paddedWidthInBlocks, texelBytePitch);
 
-            byte[] output = new byte[linearSize];
+                if (x >= widthInBlocks || y >= heightInBlocks)
+                    continue;
 
-            int blockNum = 0;
-            // Iterate over the aligned block space - the tiling scheme addresses
-            // into the full aligned region even for textures smaller than 128px
-            for (int blockY = 0; blockY < alignedBlockHeight; blockY++)
-            {
-                for (int blockX = 0; blockX < alignedBlockWidth; blockX++)
+                int srcByteOffset;
+                int destByteOffset;
+
+                if (!convertBack)
                 {
-                    int blockOffset = blockY * alignedBlockWidth + blockX;
-
-                    int tiledX = XGAddress2DTiledX(blockOffset, blockWidth, blockBytes);
-                    int tiledY = XGAddress2DTiledY(blockOffset, blockWidth, blockBytes);
-
-                    // Skip blocks that fall outside the real texture dimensions
-                    if (tiledX >= blockWidth || tiledY >= blockHeight)
-                        continue;
-
-                    // Source is the flat tiled buffer read sequentially (no aligned padding on disk)
-                    int srcOffset = blockNum * blockBytes;
-                    int dstOffset = (tiledY * blockWidth + tiledX) * blockBytes;
-
-                    Buffer.BlockCopy(input, srcOffset, output, dstOffset, blockBytes);
-                    blockNum++;
+                    srcByteOffset = blockOffset * texelBytePitch;
+                    destByteOffset = (y * widthInBlocks + x) * texelBytePitch;
                 }
+                else
+                {
+                    srcByteOffset = (y * widthInBlocks + x) * texelBytePitch;
+                    destByteOffset = blockOffset * texelBytePitch;
+                }
+
+                if (srcByteOffset + texelBytePitch > imageData.Length)
+                    continue;
+
+                Buffer.BlockCopy(imageData, srcByteOffset, convertedData, destByteOffset, texelBytePitch);
             }
 
-            return output;
+            return convertedData;
+        }
+
+        // Swap endianness of short data
+        public static void SwapEndianShort(byte[] data)
+        {
+            Span<ushort> values = MemoryMarshal.Cast<byte, ushort>(data);
+            for (int i = 0; i < values.Length; i++)
+            {
+                values[i] = BinaryPrimitives.ReverseEndianness(values[i]);
+            }
         }
     }
 }

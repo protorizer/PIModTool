@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,38 @@ namespace PIModTool.Lib
             ATI2,
             DXT5
         };
+
+        private static DDSType GetDDSType(int pixelFormat, ref bool isX360)
+        {
+            DDSType ddsFormat;
+            switch (pixelFormat)
+            {
+                case 1:
+                    ddsFormat = DDSType.DXT1;
+                    break;
+                case 5: // Not 100% sure if this is the case yet
+                    ddsFormat = DDSType.DXT5;
+                    break;
+                case 82:
+                    ddsFormat = DDSType.DXT1;
+                    isX360 = true;
+                    break;
+                case 84:
+                    ddsFormat = DDSType.DXT5;
+                    isX360 = true;
+                    break;
+                case 113:
+                    ddsFormat = DDSType.ATI2;
+                    isX360 = true;
+                    break;
+                default:
+                    Debug.Fail("Unknown pixel format " + pixelFormat);
+                    ddsFormat = DDSType.DXT1;
+                    break;
+            }
+
+            return ddsFormat;
+        }
 
         private static byte[] CreateDDSHeader(int width, int height, DDSType type)
         {
@@ -94,6 +127,7 @@ namespace PIModTool.Lib
 
             return header.ToArray();
         }
+
         public static byte[] ConvertToDDS(byte[] tex, bool highRes = false, byte[]? pit = null)
         {
             int width;
@@ -118,8 +152,8 @@ namespace PIModTool.Lib
 
             int pixelFormat = tex[16];
 
-            DDSType ddsFormat;
             bool isX360 = false;
+            DDSType ddsFormat = GetDDSType(pixelFormat, ref isX360);
 
             int length;
             if (highRes)
@@ -131,32 +165,6 @@ namespace PIModTool.Lib
                 length = BitConverter.ToInt32(tex, 20);
             }
             int hdFileOffset = BitConverter.ToInt32(tex, 28);
-
-            switch (pixelFormat)
-            {
-                case 1:
-                    ddsFormat = DDSType.DXT1;
-                    break;
-                case 5: // Not 100% sure if this is the case yet
-                    ddsFormat = DDSType.DXT5;
-                    break;
-                case 82:
-                    ddsFormat = DDSType.DXT1;
-                    isX360 = true;
-                    break;
-                case 84:
-                    ddsFormat = DDSType.DXT5;
-                    isX360 = true;
-                    break;
-                case 113:
-                    ddsFormat = DDSType.ATI2;
-                    isX360 = true;
-                    break;
-                default:
-                    Debug.Fail("Unknown pixel format " + pixelFormat);
-                    ddsFormat = DDSType.DXT1;
-                    break;
-            }
 
             byte[] header = CreateDDSHeader(width, height, ddsFormat);
             byte[] data = new byte[length];
@@ -171,8 +179,11 @@ namespace PIModTool.Lib
 
             if (isX360)
             {
+                // Swap endianness
+                Xbox360Utils.SwapEndianShort(data);
+
                 // Untile the main texture
-                byte[] untiledData = Xbox360Utils.Untile360DXT(data, 0, width, height, ddsFormat == DDSType.DXT1 ? 8 : 16);
+                byte[] untiledData = Xbox360Utils.ConvertX360Image(data, 0, width, height, ddsFormat == DDSType.DXT1 ? 8 : 16);
                 Buffer.BlockCopy(untiledData, 0, data, 0, untiledData.Length);
 
                 // Untile all the mipmaps
@@ -182,7 +193,7 @@ namespace PIModTool.Lib
                 {
                     width = Math.Max(1, width / 2);
                     height = Math.Max(1, height / 2);
-                    byte[] mipmapData = Xbox360Utils.Untile360DXT(data, dataOffset, width, height, ddsFormat == DDSType.DXT1 ? 8 : 16);
+                    byte[] mipmapData = Xbox360Utils.ConvertX360Image(data, dataOffset, width, height, ddsFormat == DDSType.DXT1 ? 8 : 16);
                     Buffer.BlockCopy(mipmapData, 0, data, dataOffset, mipmapData.Length);
                     dataOffset += mipmapData.Length;
                 }
@@ -194,6 +205,85 @@ namespace PIModTool.Lib
             Buffer.BlockCopy(data, 0, result, header.Length, data.Length);
 
             return result;
+        }
+
+        // Replace the data of a PI texture with that of the given DDS file
+        // The contents of tex or pit are set to the new file data
+        // Returns an error code or 0 if success
+        // -1: Wrong resolution
+        // -2: Wrong compression format
+        // -3: Wrong mipmap count
+        public static int ReplacePITex(byte[] tex, byte[] dds, bool highRes = false, byte[]? pit = null)
+        {
+            // Verify resolution
+            int texWidth;
+            int texHeight;
+            if (highRes)
+            {
+                texWidth = BitConverter.ToInt16(tex, 4);
+                texHeight = BitConverter.ToInt16(tex, 6);
+            }
+            else
+            {
+                texWidth = BitConverter.ToInt16(tex, 0);
+                texHeight = BitConverter.ToInt16(tex, 2);
+            }
+
+            int ddsHeight = BitConverter.ToInt32(dds, 12);
+            int ddsWidth = BitConverter.ToInt32(dds, 16);
+
+            if(texWidth != ddsWidth || texHeight != ddsHeight)
+            {
+                return -1;
+            }
+
+            // Verify format
+            int texFormatByte = tex[16];
+            bool isX360 = false;
+            DDSType texFormat = GetDDSType(texFormatByte, ref isX360);
+            string ddsFormatStr = BitConverter.ToString(dds, 84);
+            DDSType ddsFormat;
+            switch (ddsFormatStr)
+            {
+                case "DXT1":
+                    ddsFormat = DDSType.DXT1;
+                    break;
+                case "DXT5":
+                    ddsFormat = DDSType.DXT5;
+                    break;
+                case "ATI2":
+                    ddsFormat = DDSType.ATI2;
+                    break;
+                default:
+                    return -2;
+                    break;
+            }
+            if(texFormat != ddsFormat)
+            {
+                return -2;
+            }
+
+            // Verify mipmaps
+            int texMipMaps = Math.ILogB(Math.Max(texWidth, texHeight)) + 1;
+            int ddsMipMaps = BitConverter.ToInt32(dds, 28);
+            if(texMipMaps != ddsMipMaps)
+            {
+                return -3;
+            }
+
+            // Write data
+            int ddsDataLen = dds.Length - 128;
+            if (highRes)
+            {
+                int hdOffset = BitConverter.ToInt32(tex, 28);
+                Buffer.BlockCopy(dds, 128, pit, hdOffset, ddsDataLen);
+            }
+            else
+            {
+                Buffer.BlockCopy(dds, 128, tex, 32, ddsDataLen);
+            }
+
+            return 0;
         }
     }
 }
