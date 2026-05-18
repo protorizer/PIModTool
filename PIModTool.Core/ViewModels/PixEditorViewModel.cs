@@ -19,6 +19,7 @@ namespace PIModTool.Core.ViewModels
         private readonly IMvxIoCProvider _iocProvider;
 
         // Fields
+        private string _fileName = "";
         private List<GenericFile>? _pixFiles = null;
         private List<GenericFile>? _displayedFiles;
         private GenericFile? _activeFile;
@@ -32,6 +33,12 @@ namespace PIModTool.Core.ViewModels
 
         private IMvxAsyncCommand? _exportDataCommand;
         public IMvxCommand ExportDataCommand => _exportDataCommand ??= new MvxAsyncCommand(ExportData, () => ActiveSubViewModel is IPixEditorSubviewViewModel && ActiveFile != null);
+
+        public string FileName
+        {
+            get { return _fileName; }
+            set { SetProperty(ref _fileName, value); }
+        }
 
         public List<GenericFile>? DisplayedFiles
         {
@@ -130,7 +137,10 @@ namespace PIModTool.Core.ViewModels
                 return;
             }
 
+            LoadingScreenMessage = "LOADING";
             Busy = true;
+
+            FileName = Path.GetFileName(filePath);
 
             List<GenericFile>? files = await Task.Run(async () =>
             {
@@ -190,10 +200,13 @@ namespace PIModTool.Core.ViewModels
             }
         }
 
-        public async Task<string?> ShowSaveOBJDialog()
+        public async Task SavePix(string path)
         {
-            if(ActiveFile == null) { return null; }
-            return await _messageService.ShowSaveFileDialogAsync("Select a location to save the .OBJ file", Path.GetFileNameWithoutExtension(ActiveFile.Path) + ".obj", "OBJ file|*.obj|All files|*.*");
+            LoadingScreenMessage = "SAVING";
+            Busy = true;
+            await PixHandler.WritePix(_pixFiles, path);
+            Busy = false;
+            await _messageService.ShowNotifAsync("Pix saved successfully to " + path);
         }
     }
 }

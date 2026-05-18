@@ -1,9 +1,7 @@
 ﻿<views:MvxWpfView
     xmlns:views="clr-namespace:MvvmCross.Platforms.Wpf.Views;assembly=MvvmCross.Platforms.Wpf"
     xmlns:mvx="clr-namespace:MvvmCross.Platforms.Wpf.Binding;assembly=MvvmCross.Platforms.Wpf"
-    xmlns:viewModels="clr-namespace:PIModTool.Core.ViewModels.PixEditorSubviews;assembly=PIModTool.Core"
     x:Class="PIModTool.Wpf.Views.PixEditorSubviews.TextureEditorView"
-    x:TypeArguments="viewModels:TextureEditorViewModel"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -25,15 +23,40 @@
             <TabItem.Header>
                 <TextBlock Text="Standard Texture" Foreground="LightGray"/>
             </TabItem.Header>
-                <components:TextureView Source="{Binding ActiveTexture, Converter={StaticResource BinaryToBitmapConverter}}"/>
-            </TabItem>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="1"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Vertical" Grid.Column="0">
+                    <TextBlock Text="Options" Foreground="LightGray" HorizontalAlignment="Center" FontFamily="pack://application:,,,/Resources/Fonts/#Euromode" FontSize="14" Padding="10"/>
+                    <Button Height="25" Width="150" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Command="{Binding ReplaceTextureCommand}">Replace Texture</Button>
+                </StackPanel>
+                <Rectangle Grid.Column="1" Fill="DarkGray"/>
+                <components:TextureView Grid.Column="2" Source="{Binding ActiveTexture, Converter={StaticResource BinaryToBitmapConverter}}"/>
+            </Grid>
+        </TabItem>
         <TabItem>
             <TabItem.Header>
                 <TextBlock Text="HD Texture" Foreground="LightGray"/>
             </TabItem.Header>
             <Grid>
                 <Button Width="200" Height="75" Command="{Binding OpenPitCommand}" Visibility="{Binding LoadedPit, Converter={StaticResource InverseBoolToVisibilityConverter}}" Style="{StaticResource CustomButtonStyle}">Open textures.pit</Button>
-                <components:TextureView Source="{Binding ActiveTextureHD, Converter={StaticResource BinaryToBitmapConverter}}" Visibility="{Binding LoadedPit, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                <Grid Visibility="{Binding LoadedPit, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="1"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Vertical" Grid.Column="0">
+                        <TextBlock Text="Options" Foreground="LightGray" HorizontalAlignment="Center" FontFamily="pack://application:,,,/Resources/Fonts/#Euromode" FontSize="14" Padding="10"/>
+                        <Button Height="25" Width="150" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,10" Command="{Binding ReplaceHDTextureCommand}">Replace Texture</Button>
+                        <Button Height="25" Width="150" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,10" Command="{Binding SavePitCommand}">Save textures.pit</Button>
+                    </StackPanel>
+                    <Rectangle Grid.Column="1" Fill="DarkGray"/>
+                    <components:TextureView Grid.Column="2" Source="{Binding ActiveTextureHD, Converter={StaticResource BinaryToBitmapConverter}}"/>
+                </Grid>
             </Grid>
         </TabItem>
     </TabControl>

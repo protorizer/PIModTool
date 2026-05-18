@@ -34,11 +34,12 @@ namespace PIModTool.Lib
         {
             try
             {
-                using MemoryStream dataStream = new MemoryStream(data);
-                using ZLibStream deflateStream = new ZLibStream(dataStream, CompressionMode.Compress);
                 using MemoryStream outputStream = new MemoryStream();
+                using (ZLibStream deflateStream = new ZLibStream(outputStream, CompressionMode.Compress, true))
+                {
+                    deflateStream.Write(data, 0, data.Length);
+                }
 
-                deflateStream.CopyTo(outputStream);
                 return outputStream.ToArray();
             }
             catch
@@ -153,7 +154,7 @@ namespace PIModTool.Lib
                     byte[]? compressedData = TryCompressZlib(fileStream.ToArray());
                     if (compressedData == null)
                     {
-                        throw new Exception("Failed to compress file");
+                        throw new Exception("Failed to compress file " + file.Path);
                     }
 
                     // Write zSize, size

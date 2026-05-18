@@ -35,6 +35,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="10"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="10"/>
             </Grid.RowDefinitions>
@@ -47,7 +48,10 @@
             </Grid.ColumnDefinitions>
 
 
-            <Button Grid.Row="1" Grid.Column="1" Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="BackButton_OnClick">Back to Dashboard</Button>
+            <StackPanel Grid.Row="1" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
+                <Button Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="BackButton_OnClick">Back to Dashboard</Button>
+                <Button Height="25" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Click="SavePixButton_OnClick">Save .pix File</Button>
+            </StackPanel>
             <Grid Grid.Row="1" Grid.Column="3" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -57,7 +61,7 @@
                 <ComboBox Grid.Column="0" Height="25" Margin="0,0,0,5" ItemsSource="{Binding Editors}" SelectedItem="{Binding SelectedEditor, Mode=TwoWay}" DisplayMemberPath="DisplayName" IsEnabled="{Binding LoadedFiles}" Text="Select Editor..." Foreground="LightGray"/>
                 <Button Grid.Column="2" Height="25" Width="200" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,5" Command="{Binding ExportDataCommand}">Export File</Button>
             </Grid>
-            <Border Grid.Row="2" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">
+            <Border Grid.Row="3" Grid.Column="1" BorderBrush="DarkGray" BorderThickness="1">
                 <components:FileTreeNodeView Width="200" Files="{Binding DisplayedFiles}" SelectedFile="{Binding ActiveFile, Mode=TwoWay}" EnableRename="False"/>
             </Border>
 
