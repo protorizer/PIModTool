@@ -70,6 +70,10 @@ namespace PIModTool.Lib
                 case DDSType.X360_DXN:
                     writer.Write(new[] { (byte)'A', (byte)'T', (byte)'I', (byte)'2' }); // FOURCC
                     break;
+                default:
+                    Debug.Fail($"Unsupported pixel format {type}");
+                    writer.Write(new[] { (byte)'D', (byte)'X', (byte)'T', (byte)'1' }); // FOURCC
+                    break;
             }
             writer.Write(0); // RGBBitCount
             writer.Write(0); // RBitMask

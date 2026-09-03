@@ -1,4 +1,6 @@
-﻿namespace PIModTool.Lib.Utilities
+﻿using System.Diagnostics;
+
+namespace PIModTool.Lib.Utilities
 {
     public static class EnumUtils
     {
@@ -23,12 +25,20 @@
 
         public static T TryConvertUInt<T>(uint i) where T : struct, Enum
         {
-            if (!Enum.IsDefined(typeof(T), i))
+            try
             {
-                throw new ArgumentException($"Value {i} is not a valid member of enum {typeof(T).Name}.");
-            }
+                if (!Enum.IsDefined(typeof(T), i))
+                {
+                    throw new ArgumentException($"Value {i} is not a valid member of enum {typeof(T).Name}.");
+                }
 
-            return (T)Enum.ToObject(typeof(T), i);
+                return (T)Enum.ToObject(typeof(T), i);
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.Message);
+                return (T)Enum.GetValues(typeof(T)).GetValue(0); // Failsafe value so the whole program doesn't crash
+            }
         }
     }
 }
