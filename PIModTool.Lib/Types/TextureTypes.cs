@@ -42,9 +42,17 @@
         TYPE_VOLUME = 2
     };
 
-    // Exact representation of the 32 byte X2M/P3M texture header
+    // Different games have slightly different pseudo engine versions, and thus need to be handled slightly different
+    public enum Game: byte
+    {
+        DEFAULT = 0, // Majority of games
+        FA1 = 1 // FA1 has no volume textures and a slightly different header format
+    }
+
+    // Exact representation of the 32 byte X2M/P3M texture header, plus extra metadata
     public struct PITexture
     {
+        public Game Game; // NOT part of the file, used to differentiate slightly different versions of the format from different engine versions
         public UInt16 Width; // Normal texture width
         public UInt16 Height; // Normal texture height
         public UInt16 HDWidth; // .pit texture width

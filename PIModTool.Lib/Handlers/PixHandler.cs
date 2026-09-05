@@ -1,10 +1,7 @@
 ﻿using PIModTool.Lib.Extensions;
 using PIModTool.Lib.Types;
-using System.Buffers.Binary;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO.Compression;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace PIModTool.Lib
@@ -159,7 +156,8 @@ namespace PIModTool.Lib
 
                     // Write zSize, size
                     pixWriter.Write(compressedData.Length);
-                    pixWriter.Write(fileStream.Length);
+                    int uncompressedLength = fileStream.Length > int.MaxValue ? throw new Exception("Chunk too large") : (int)fileStream.Length;
+                    pixWriter.Write(uncompressedLength);
 
                     // Pad to 0x800 padded boundaries
                     long dataOffset = (pixFile.Position + 0x7FF) & ~0x7FFL;
