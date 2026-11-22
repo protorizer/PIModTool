@@ -55,6 +55,7 @@
                         <Button Height="25" Width="150" Style="{StaticResource CustomButtonStyle}" Margin="0,0,0,10" Command="{Binding SavePitCommand}">Save textures.pit</Button>
                     </StackPanel>
                     <Rectangle Grid.Column="1" Fill="DarkGray"/>
+                    <TextBlock Grid.Column="2" Text="This texture does not have an HD version!" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center" FontFamily="pack://application:,,,/Resources/Fonts/#Euromode" FontSize="30" Visibility="{Binding HasHDTexture, Converter={StaticResource InverseBoolToVisibilityConverter}}"/>
                     <components:TextureView Grid.Column="2" Source="{Binding ActiveTextureHD, Converter={StaticResource BinaryToBitmapConverter}}"/>
                 </Grid>
             </Grid>

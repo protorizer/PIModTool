@@ -7,9 +7,10 @@
     {
         PS3_DXT1 = 1,
         PS3_DXT5 = 5,
+        PS3_L8 = 8, // Uncompressed L8 for AO
         X360_DXT1 = 0x1A200152,
         X360_DXN = 0x1A200171, // ATI2
-        X360_A8R8G8B8 = 0x18280186, // Unsure what this is for but it's referenced in the code
+        X360_A8R8G8B8 = 0x18280186, // Used for some UI elements
         X360_L8 = 0x28000102, // Unsure what this is for but it's referenced in the code
         X360_DXT5 = 0x1A200154, // Shared with DXT4
     };

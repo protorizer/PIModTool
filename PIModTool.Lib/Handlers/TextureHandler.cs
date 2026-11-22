@@ -1,12 +1,7 @@
 ﻿using PIModTool.Lib.Types;
 using PIModTool.Lib.Utilities;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime;
 using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PIModTool.Lib
 {
@@ -24,7 +19,7 @@ namespace PIModTool.Lib
             writer.Write(124);
 
             // Flags
-            writer.Write(0x00021007);
+            writer.Write(IsPS3Swizzled(type) ? 0x0002100F : 0x00021007);
 
             // Height & Width
             writer.Write(height);
@@ -32,7 +27,11 @@ namespace PIModTool.Lib
 
             // Pitch or Linear Size (for DXT1: max(1, ((width+3)/4)) * blockSize)
             int linearSize;
-            if (type == DDSType.PS3_DXT1 || type == DDSType.X360_DXT1)
+            if (IsPS3Swizzled(type))
+            {
+                linearSize = width;
+            }
+            else if (type == DDSType.PS3_DXT1 || type == DDSType.X360_DXT1)
             {
                 linearSize = Math.Max(1, ((width + 3) / 4)) * 8 * ((height + 3) / 4);
             }
@@ -56,42 +55,52 @@ namespace PIModTool.Lib
 
             // Pixel format (DDS_PIXELFORMAT)
             writer.Write(32);                // size
-            if(type != DDSType.X360_A8R8G8B8)
+            switch (type)
             {
-                writer.Write(0x00000004);        // flags (FOURCC)
-                switch (type)
-                {
-                    case DDSType.PS3_DXT1:
-                    case DDSType.X360_DXT1:
-                        writer.Write(new[] { (byte)'D', (byte)'X', (byte)'T', (byte)'1' }); // FOURCC
-                        break;
-                    case DDSType.PS3_DXT5:
-                    case DDSType.X360_DXT5:
-                        writer.Write(new[] { (byte)'D', (byte)'X', (byte)'T', (byte)'5' }); // FOURCC
-                        break;
-                    case DDSType.X360_DXN:
-                        writer.Write(new[] { (byte)'A', (byte)'T', (byte)'I', (byte)'2' }); // FOURCC
-                        break;
-                    default:
-                        Debug.Fail($"Unsupported pixel format {type}");
-                        writer.Write(new[] { (byte)'D', (byte)'X', (byte)'T', (byte)'1' }); // FOURCC
-                        break;
-                }
-                writer.Write(0); // RGBBitCount
-                writer.Write(0); // RBitMask
-                writer.Write(0); // GBitMask
-                writer.Write(0); // BBitMask
-                writer.Write(0); // ABitMask
-            }
-            else // Uncompressed texture
-            {
-                writer.Write(0x00000041); // flags (RGB)
-                writer.Write(0); // FOURCC (UNUSED)
-                writer.Write(32); // RGBBitCount
-                writer.Write(0x00FF0000); // RBitMask
-                writer.Write(0x0000FF00); // GBitMask
-                writer.Write(0x000000FF); // BBitMask
-                writer.Write(0xFF000000); // ABitMask
+                case DDSType.X360_A8R8G8B8:
+                    writer.Write(0x00000041); // flags (RGB)
+                    writer.Write(0); // FOURCC (UNUSED)
+                    writer.Write(32); // RGBBitCount
+                    writer.Write(0x00FF0000); // RBitMask
+                    writer.Write(0x0000FF00); // GBitMask
+                    writer.Write(0x000000FF); // BBitMask
+                    writer.Write(0xFF000000); // ABitMask
+                    break;
+                case DDSType.PS3_L8:
+                    writer.Write(0x00020000); // flags (LUMINANCE)
+                    writer.Write(0); // FOURCC (UNUSED)
+                    writer.Write(8); // RGBBitCount
+                    writer.Write(0x000000FF); // RBitMask (luminance mask)
+                    writer.Write(0); // GBitMask
+                    writer.Write(0); // BBitMask
+                    writer.Write(0); // ABitMask
+                    break;
+                default:
+                    writer.Write(0x00000004);        // flags (FOURCC)
+                    switch (type)
+                    {
+                        case DDSType.PS3_DXT1:
+                        case DDSType.X360_DXT1:
+                            writer.Write(new[] { (byte)'D', (byte)'X', (byte)'T', (byte)'1' }); // FOURCC
+                            break;
+                        case DDSType.X360_DXT5:
+                        case DDSType.PS3_DXT5:
+                            writer.Write(new[] { (byte)'D', (byte)'X', (byte)'T', (byte)'5' }); // FOURCC
+                            break;
+                        case DDSType.X360_DXN:
+                            writer.Write(new[] { (byte)'A', (byte)'T', (byte)'I', (byte)'2' }); // FOURCC
+                            break;
+                        default:
+                            Debug.Fail($"Unsupported pixel format {type}");
+                            writer.Write(new[] { (byte)'D', (byte)'X', (byte)'T', (byte)'1' }); // FOURCC
+                            break;
+                    }
+                    writer.Write(0); // RGBBitCount
+                    writer.Write(0); // RBitMask
+                    writer.Write(0); // GBitMask
+                    writer.Write(0); // BBitMask
+                    writer.Write(0); // ABitMask
+                    break;
             }
 
             // Caps
@@ -189,22 +198,33 @@ namespace PIModTool.Lib
             return (int)type > 10; // X360 formats are all big ints, PS3 are all small ints. 10 is an arbitrary number
         }
 
+        // Uncompressed PS3 texture formats are Morton swizzled
+        private static bool IsPS3Swizzled(DDSType type)
+        {
+            return type == DDSType.PS3_L8;
+        }
+
         private static int GetTexelBytePitch(DDSType type)
         {
-            if(type == DDSType.X360_A8R8G8B8)
+            switch (type)
             {
+                // Uncompressed single-channel
+                case DDSType.PS3_L8:
+                    return 1;
                 // Uncompressed
-                return 4;
+                case DDSType.X360_A8R8G8B8:
+                    return 4;
+                // DXY1
+                case DDSType.X360_DXT1:
+                case DDSType.PS3_DXT1:
+                    return 8;
+                default:
+                    return 16;
             }
-            else if(type == DDSType.X360_DXT1)
-            {
-                return 8;
-            }
-            return 16;
         }
         private static int GetBlockPixelSize(DDSType type)
         {
-            if(type == DDSType.X360_A8R8G8B8)
+            if(type == DDSType.X360_A8R8G8B8 || type == DDSType.PS3_L8)
             {
                 // Uncompressed
                 return 1;
@@ -212,7 +232,7 @@ namespace PIModTool.Lib
             return 4;
         }
 
-        public static byte[] ConvertToDDS(byte[] texData, bool highRes = false, byte[]? pit = null)
+        public static byte[]? ConvertToDDS(byte[] texData, bool highRes = false, byte[]? pit = null)
         {
             PITexture tex = ReadPITexture(texData);
             int width;
@@ -223,11 +243,7 @@ namespace PIModTool.Lib
                 height = tex.HDHeight;
                 if(width == 0 || height == 0)
                 {
-                    // Texture does not have an HD equivalent
-                    width = tex.Width;
-                    height = tex.Height;
-                    highRes = false;
-                    // TODO: display a no HD texture messaage instead
+                    return null; // No HD texture
                 }
             }
             else
@@ -281,7 +297,7 @@ namespace PIModTool.Lib
                     if(i < packedMipBase)
                     {
                         imageData[i] = Xbox360Utils.ConvertX360Image(data, dataOffset, mipWidth, mipHeight, texelBytePitch, blockPixelSize);
-                        dataOffset += Xbox360Utils.GetTiledLevelSize(mipWidth, mipHeight, texelBytePitch); // Normal mipmaps are always written to at minimum one chunk
+                        dataOffset += Xbox360Utils.GetTiledLevelSize(mipWidth, mipHeight, texelBytePitch, blockPixelSize); // Normal mipmaps are always written to at minimum one chunk
                     }
                     // Packed mipmap, record the data to convert the entire chunk at the end
                     else
@@ -312,7 +328,10 @@ namespace PIModTool.Lib
                 }
 
                 data = outputStream.ToArray();
-                Xbox360Utils.SwapEndianWord(data);
+            }
+            else if (IsPS3Swizzled(tex.TextureFormat))
+            {
+                data = PS3Utils.DeswizzleMipChain(data, width, height, numLevels, GetTexelBytePitch(tex.TextureFormat));
             }
 
             byte[] result = new byte[header.Length + data.Length];
@@ -356,6 +375,8 @@ namespace PIModTool.Lib
             // Verify format
             string ddsFormatStr = Encoding.UTF8.GetString([dds[84], dds[85], dds[86], dds[87]]);
             DDSType ddsFormat;
+            int ddsDataOffset = 128;
+            ArgbLayout argbLayout = DDSUtils.NativeArgbLayout; // Channel order of 32-bit uncompressed files
             // Defaulting to X360 format since we know these values for sure due to the disassembly
             switch (ddsFormatStr)
             {
@@ -369,6 +390,18 @@ namespace PIModTool.Lib
                     ddsFormat = DDSType.X360_DXN;
                     break;
                 default:
+                    // Check for uncompressed textures
+                    if (DDSUtils.TryGetArgb8888Format(dds, out ddsDataOffset, out argbLayout))
+                    {
+                        ddsFormat = DDSType.X360_A8R8G8B8;
+                        break;
+                    }
+                    else if (PS3Utils.TryGetSingleChannel8Format(dds, out ddsDataOffset))
+                    {
+                        ddsFormat = DDSType.PS3_L8;
+                        break;
+                    }
+
                     return -2;
             }
             if(!ddsFormat.IsEqual(tex.TextureFormat)) // IsEqual accounts for different platforms
@@ -392,8 +425,15 @@ namespace PIModTool.Lib
                 int blockPixelSize = GetBlockPixelSize(ddsFormat);
 
                 // Remove header and swap to big endian
-                byte[] linearData = new byte[dds.Length - 128];
-                Buffer.BlockCopy(dds, 128, linearData, 0, linearData.Length);
+                byte[] linearData = new byte[dds.Length - ddsDataOffset];
+                Buffer.BlockCopy(dds, ddsDataOffset, linearData, 0, linearData.Length);
+
+                if(ddsFormat == DDSType.X360_A8R8G8B8)
+                {
+                    // Normalise whatever channel order the file uses to B, G, R, A, which is what the DDS A8R8G8B8 format is in memory
+                    DDSUtils.ConvertToBgra(linearData, argbLayout);
+                }
+
                 if (blockPixelSize == 1)
                 {
                     Xbox360Utils.SwapEndianWord(linearData);
@@ -419,8 +459,8 @@ namespace PIModTool.Lib
                 int packedTailSrcOffset = -1;
                 for (int i = 0; i < ddsMipMaps; i++)
                 {
-                    int wBlocks = Math.Max(1, mipWidth / 4);
-                    int hBlocks = Math.Max(1, mipHeight / 4);
+                    int wBlocks = Math.Max(1, mipWidth / blockPixelSize);
+                    int hBlocks = Math.Max(1, mipHeight / blockPixelSize);
                     int levelSize = wBlocks * hBlocks * texelBytePitch;
 
                     if (i < packedMipBase)
@@ -454,11 +494,23 @@ namespace PIModTool.Lib
                 }
 
                 outputData = outputStream.ToArray();
-                Xbox360Utils.SwapEndianWord(outputData);
+            }
+            else if (IsPS3Swizzled(tex.TextureFormat)){
+                // Uncompressed PS3 formats are Morton swizzled
+                int bytesPerTexel = GetTexelBytePitch(ddsFormat);
+                int expectedSize = PS3Utils.GetLinearChainSize(ddsWidth, ddsHeight, ddsMipMaps, bytesPerTexel);
+                if (dds.Length - ddsDataOffset < expectedSize)
+                {
+                    return -4;
+                }
+                
+                byte[] linearData = new byte[expectedSize];
+                Buffer.BlockCopy(dds, ddsDataOffset, linearData, 0, expectedSize);
+                outputData = PS3Utils.SwizzleMipChain(linearData, ddsWidth, ddsHeight, ddsMipMaps, bytesPerTexel);
             }
             else
             {
-                // PS3 - no need for swizzling so nice and simple. Man why can't all the formats be like this
+                // Compressed PS3 - no need for swizzling so nice and simple. Man why can't all the formats be like this
                 outputData = new byte[dds.Length - 128];
                 Buffer.BlockCopy(dds, 128, outputData, 0, outputData.Length);
             }

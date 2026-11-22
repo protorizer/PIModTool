@@ -105,9 +105,8 @@ namespace PIModTool.Lib.Utilities
         }
 
         // Size in bytes that each mipmap tile takes up - effectively in increments of 1024*texelBytePitch
-        public static int GetTiledLevelSize(int imageWidth, int imageHeight, int texelBytePitch)
+        public static int GetTiledLevelSize(int imageWidth, int imageHeight, int texelBytePitch, int blockPixelSize)
         {
-            int blockPixelSize = 4;
             int widthInBlocks = Math.Max(1, imageWidth / blockPixelSize);
             int heightInBlocks = Math.Max(1, imageHeight / blockPixelSize);
             int paddedWidthInBlocks = (widthInBlocks + 31) & ~31;

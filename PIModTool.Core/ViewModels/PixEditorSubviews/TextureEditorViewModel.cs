@@ -11,6 +11,7 @@ namespace PIModTool.Core.ViewModels.PixEditorSubviews
         private GenericFile? _activeFile;
         private byte[]? _activeTexture;
         private byte[]? _activeTextureHD;
+
         private int _selectedTab;
         private byte[]? _pitFile;
 
@@ -43,7 +44,15 @@ namespace PIModTool.Core.ViewModels.PixEditorSubviews
         public byte[]? ActiveTextureHD
         {
             get { return _activeTextureHD; }
-            set { SetProperty(ref _activeTextureHD, value); }
+            set { 
+                SetProperty(ref _activeTextureHD, value);
+                RaisePropertyChanged(() => HasHDTexture);
+            }
+        }
+
+        public bool HasHDTexture
+        {
+            get { return ActiveTextureHD != null; }
         }
 
         public int SelectedTab
